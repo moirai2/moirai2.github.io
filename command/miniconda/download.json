@@ -1,0 +1,1 @@
+{"http://localhost/~ah3q/schema/daemon/select":["$root->http://localhost/~ah3q/schema/daemon/execute->$nodeid","$nodeid->http://localhost/~ah3q/schema/daemon/command->$this","$root->minicondaurl->$url"],"http://localhost/~ah3q/schema/daemon/insert":"$url->http://localhost/~ah3q/schema/daemon/execute->http://localhost/~ah3q/javascript/201810/command/system/download.json"}

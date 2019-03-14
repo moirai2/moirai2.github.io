@@ -1,0 +1,1 @@
+{"http://localhost/~ah3q/schema/daemon/select":["$input->http://localhost/~ah3q/schema/daemon/execute->$nodeid","$nodeid->http://localhost/~ah3q/schema/daemon/command->$this"],"http://localhost/~ah3q/schema/daemon/bash":["output=\"$tmpdir/output.bam\"","samtools view -bSo $output $input"],"http://localhost/~ah3q/schema/daemon/output":"$output"}

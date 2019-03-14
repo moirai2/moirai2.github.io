@@ -1,0 +1,1 @@
+{"http://localhost/~ah3q/schema/daemon/select":["$url->http://localhost/~ah3q/schema/daemon/execute->$nodeid","$nodeid->http://localhost/~ah3q/schema/daemon/command->$this"],"http://localhost/~ah3q/schema/daemon/bash":["machinename=$(uname -m)"],"http://localhost/~ah3q/schema/daemon/output":"$machinename"}

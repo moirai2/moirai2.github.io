@@ -1,0 +1,1 @@
+{"http://localhost/~ah3q/schema/daemon/select":["$path->http://localhost/~ah3q/schema/daemon/execute->$nodeid","$nodeid->http://localhost/~ah3q/schema/daemon/command->$this"],"http://localhost/~ah3q/schema/daemon/bash":["output=\"$tmpdir/uniq.txt\"","uniq -c $path > $output"],"http://localhost/~ah3q/schema/daemon/output":"$output"}
