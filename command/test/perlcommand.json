@@ -1,1 +1,0 @@
-{"https://moirai2.github.io/schema/daemon/select":"$root->total->$total,$root->sequence->$sequence","https://moirai2.github.io/schema/daemon/perl":[{"count":{"$sequence":"$root->sequence->$sequence"}},{"sum":{"$sequence":"$root->total->$total"}}]}
