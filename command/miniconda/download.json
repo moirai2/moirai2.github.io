@@ -1,1 +1,0 @@
-{"https://moirai2.github.io/schema/daemon/select":["$root->https://moirai2.github.io/schema/daemon/execute->$nodeid","$nodeid->https://moirai2.github.io/schema/daemon/command->$this","$root->minicondaurl->$url"],"https://moirai2.github.io/schema/daemon/insert":"$url->https://moirai2.github.io/schema/daemon/execute->https://moirai2.github.io/command/system/download.json"}

@@ -1,1 +1,1 @@
-{"https://moirai2.github.io/schema/daemon/select":["$path->https://moirai2.github.io/schema/daemon/execute->$nodeid","$nodeid->https://moirai2.github.io/schema/daemon/command->$this"],"https://moirai2.github.io/schema/daemon/bash":["output=\"$tmpdir/uniq.txt\"","uniq -c $path > $output"],"https://moirai2.github.io/schema/daemon/output":"$output"}
+{"https://moirai2.github.io/schema/daemon/input":"$input","https://moirai2.github.io/schema/daemon/bash":["output=\"$tmpdir/uniq.txt\"","uniq -c $input > $output"],"https://moirai2.github.io/schema/daemon/output":"$output"}

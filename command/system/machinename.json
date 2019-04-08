@@ -1,1 +1,1 @@
-{"https://moirai2.github.io/schema/daemon/select":["$url->https://moirai2.github.io/schema/daemon/execute->$nodeid","$nodeid->https://moirai2.github.io/schema/daemon/command->$this"],"https://moirai2.github.io/schema/daemon/bash":["machinename=$(uname -m)"],"https://moirai2.github.io/schema/daemon/output":"$machinename"}
+{"https://moirai2.github.io/schema/daemon/input":"$root","https://moirai2.github.io/schema/daemon/bash":["machinename=$(uname -m)"],"https://moirai2.github.io/schema/daemon/output":"$machinename"}
