@@ -1,1 +1,1 @@
-{"https://moirai2.github.io/schema/daemon/input":"$input","https://moirai2.github.io/schema/daemon/bash":["output=\"$tmpdir/output.sam\"","samtools view -h $input > $output"],"https://moirai2.github.io/schema/daemon/output":"$output"}
+revision/bam2sam.20190515.json

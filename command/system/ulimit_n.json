@@ -1,1 +1,1 @@
-{"https://moirai2.github.io/schema/daemon/input":"$root","https://moirai2.github.io/schema/daemon/bash":["maxopensize=$(ulimit -n)"],"https://moirai2.github.io/schema/daemon/output":"$maxopensize"}
+revision/ulimit_n.20190404.json

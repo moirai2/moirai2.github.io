@@ -1,0 +1,1 @@
+{"https://moirai2.github.io/schema/daemon/input":"$input","https://moirai2.github.io/schema/daemon/bash":["html=\"$tmpdir/report.html\"","zip=\"$tmpdir/report.zip\"","fastqc --nogroup -o $tmpdir $input","mv $tmpdir/*_fastqc.html $html","mv $tmpdir/*_fastqc.zip $zip"],"https://moirai2.github.io/schema/daemon/output":["$html","$zip"]}

@@ -1,2 +1,1 @@
-{"https://moirai2.github.io/schema/daemon/input":"$runid","https://moirai2.github.io/schema/daemon/bash":["import=$tmpdir/import.txt","fastq-dump --gzip --split-files --outdir $tmpdir --maxSpotId 1000 $runid","if [ -s $tmpdir/${runid}_1.fastq.gz ]","then","echo \"$runid\traw1\t$tmpdir/${runid}_1.fastq.gz\" >> $import","fi","if [ -s $tmpdir/${runid}_2.fastq.gz ]","then","echo \"$runid\traw2\t$tmpdir/${runid}_2.fastq.gz\" >> $import","fi"
-,"sleep 2"],"https://moirai2.github.io/schema/daemon/output":"$import","https://moirai2.github.io/schema/daemon/singlethread":true}
+revision/fastq-dump.20190403.json

@@ -1,1 +1,1 @@
-{"https://moirai2.github.io/schema/daemon/input":["$input","reference"],"https://moirai2.github.io/schema/daemon/bash":["alnfile=\"$tmpdir/temp.aln\"","output=\"$tmpdir/output.sam\"","bwa aln $reference $input > $alnfile","bwa samse $reference $alnfile $input > $output"],"https://moirai2.github.io/schema/daemon/output":"$output","https://moirai2.github.io/schema/daemon/miniconda":"https://anaconda.org/bioconda/bwa"}
+revision/alnsamse.20190509.json

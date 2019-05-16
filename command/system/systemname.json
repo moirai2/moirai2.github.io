@@ -1,1 +1,1 @@
-{"https://moirai2.github.io/schema/daemon/input":"$root","https://moirai2.github.io/schema/daemon/bash":["systemname=$(uname -s)"],"https://moirai2.github.io/schema/daemon/output":"$systemname"}
+revision/systemname.20190403.json

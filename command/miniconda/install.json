@@ -1,1 +1,1 @@
-{"https://moirai2.github.io/schema/daemon/select":["$root","$script"],"https://moirai2.github.io/schema/daemon/bash":["condadirectory=\"conda\"","bash $script -b -p $condadirectory","chmod -R 777 $condadirectory"],"https://moirai2.github.io/schema/daemon/output":"$condadirectory"}
+revision/install.20190403.json
