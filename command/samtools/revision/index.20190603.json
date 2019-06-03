@@ -1,1 +1,1 @@
-{"https://moirai2.github.io/schema/daemon/input":"$input","https://moirai2.github.io/schema/daemon/bash":["output=\"$tmpdir/output.index\"","samtools index $input $output"],"https://moirai2.github.io/schema/daemon/output":"$output"}
+{"https://moirai2.github.io/schema/daemon/input":"$input","https://moirai2.github.io/schema/daemon/bash":["basename=basename $input .bam","output=$tmpdir/$basename.index","samtools index $input $output"],"https://moirai2.github.io/schema/daemon/output":"$output"}
