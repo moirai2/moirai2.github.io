@@ -1,0 +1,1 @@
+https://moirai2.github.io/workflow/miniconda3/directory	miniconda3
