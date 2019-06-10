@@ -1,0 +1,1 @@
+{"https://moirai2.github.io/schema/daemon/bash":"machinename=`perl $cwd/moirai2.pl -d $localdb https://moirai2.github.io/command/system/machinename.json`","https://moirai2.github.io/schema/daemon/insert":"https://moirai2.github.io/workflow/miniconda3->https://moirai2.github.io/workflow/miniconda3/machinename->$machinename"}
