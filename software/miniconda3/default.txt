@@ -1,1 +1,1 @@
-https://moirai2.github.io/workflow/miniconda3/directory	miniconda3
+https://moirai2.github.io/software/miniconda3/directory	miniconda3
