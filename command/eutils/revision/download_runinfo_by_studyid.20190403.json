@@ -1,1 +1,0 @@
-{"https://moirai2.github.io/schema/daemon/input":"$studyid","https://moirai2.github.io/schema/daemon/bash":["runinfo=\"$tmpdir/runinfo.txt\"","esearch -db sra -query $studyid | efetch -db sra -format runinfo > $runinfo","sleep 2"],"https://moirai2.github.io/schema/daemon/output":"$runinfo","https://moirai2.github.io/schema/daemon/singlethread":true}
