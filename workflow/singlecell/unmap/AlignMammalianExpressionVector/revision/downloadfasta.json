@@ -1,0 +1,1 @@
+{"https://moirai2.github.io/schema/daemon/select":["#->#STAR->$bin","#->#directory->$directory","$node->#input->$input"],"https://moirai2.github.io/schema/daemon/bash":["output=\"$tmpdir/output.sam\"","perl moirai2.pl -d $localdb  $bin $directory $input $output"]}
