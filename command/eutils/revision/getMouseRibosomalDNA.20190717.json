@@ -1,0 +1,1 @@
+{"https://moirai2.github.io/schema/daemon/bash":["output=\"$tmpdir/ERCC.fa.gz\"","esearch -db nucleotide -query BK000964 | efetch -db nucleotide -format fasta | gzip -c > $output","sleep 2"],"https://moirai2.github.io/schema/daemon/output":"$output","https://moirai2.github.io/schema/daemon/singlethread":true}
