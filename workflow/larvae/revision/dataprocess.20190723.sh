@@ -9,6 +9,11 @@ fi
 
 perl moirai2.pl \
 -d larvae.sqlite3 \
+-o 'root->#star->$$path' \
+https://moirai2.github.io/software/star/install.json
+
+perl moirai2.pl \
+-d larvae.sqlite3 \
 -i 'root->#star->$starbin,root->#starindex->$starindex,root->#samtools->$samtoolsbin,$id->#read1->$input1,$id->#read2->$input2' \
 -o '$id->#bam->$bam,$id->#log->$log' \
 https://moirai2.github.io/command/star/align_paired.json
