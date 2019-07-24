@@ -34,7 +34,7 @@ https://moirai2.github.io/command/sam/samstats.json
 perl moirai2.pl \
 -d larvae.sqlite3 \
 -i '$id->#bam->$input' \
--o '$id->#multicount->$multicount' \
+-o '$id->#multicount->$multicount,$id->#unmap1->$unmap1,$id->#unmap2->$unmap2' \
 https://moirai2.github.io/command/star/remove_multimap_paired.json
 
 perl moirai2.pl \
