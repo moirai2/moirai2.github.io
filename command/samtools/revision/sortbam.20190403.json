@@ -1,1 +1,1 @@
-{"https://moirai2.github.io/schema/daemon/input":"$input","https://moirai2.github.io/schema/daemon/bash":["output=\"$tmpdir/sort.bam\"","samtools sort -f $input $output"],"https://moirai2.github.io/schema/daemon/output":"$output"}
+{"https://moirai2.github.io/schema/daemon/input":"$input","https://moirai2.github.io/schema/daemon/bash":["output=\"$tmpdir/sort.bam\"","samtools sort -o $output $input"],"https://moirai2.github.io/schema/daemon/output":"$output"}
