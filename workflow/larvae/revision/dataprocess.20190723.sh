@@ -2,30 +2,16 @@ if [ $# -gt 0 ] ; then
 nodeid=`perl rdf.pl -d larvae.sqlite3 newnode`
 perl rdf.pl -d larvae.sqlite3 insert $nodeid '#read1' $1
 perl rdf.pl -d larvae.sqlite3 insert $nodeid '#read2' $2
-perl rdf.pl -d larvae.sqlite3 insert root '#bin' bin
 perl rdf.pl -d larvae.sqlite3 insert root '#starindex' $3
+#perl rdf.pl -d larvae.sqlite3 software STAR samtools bedtools
+#perl rdf.pl -d larvae.sqlite3 install STAR samtools bedtools
 fi
-
-perl rdf.pl -d larvae.sqlite3 software STAR
-perl rdf.pl -d larvae.sqlite3 software samtools
-
-perl moirai2.pl \
--d larvae.sqlite3 \
--i 'root->#bin->$bindir' \
--o 'STAR->https://moirai2.github.io/schema/software/bin->$path' \
-https://moirai2.github.io/software/install/star.json
-
-perl moirai2.pl \
--d larvae.sqlite3 \
--i 'root->#bin->$bindir' \
--o 'samtools->https://moirai2.github.io/schema/software/bin->$path' \
-https://moirai2.github.io/software/install/samtools.json
 
 perl moirai2.pl \
 -d larvae.sqlite3 \
 -i '$id->#read1->$input1,$id->#read2->$input2' \
 -o '$id->#bam->$bam,$id->#log->$log' \
-https://moirai2.github.io/command/star/align_paired.json
+https://moirai2.github.io/command/STAR/align_paired.json
 
 perl moirai2.pl \
 -d larvae.sqlite3 \
@@ -49,7 +35,7 @@ perl moirai2.pl \
 -d larvae.sqlite3 \
 -i '$id->#bam->$input' \
 -o '$id->#multicount->$multicount,$id->#unmap1->$unmap1,$id->#unmap2->$unmap2' \
-https://moirai2.github.io/command/star/remove_multimap_paired.json
+https://moirai2.github.io/command/STAR/remove_multimap_paired.json
 
 perl moirai2.pl \
 -d larvae.sqlite3 \
