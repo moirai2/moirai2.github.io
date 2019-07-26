@@ -3,7 +3,7 @@ runid=$1;
 perl rdf.pl -d larvae.sqlite3 insert larvae '#run' $runid
 perl rdf.pl -d larvae.sqlite3 insert $runid '#read1' $2
 perl rdf.pl -d larvae.sqlite3 insert $runid '#read2' $3
-perl rdf.pl -d larvae.sqlite3 insert larvae '#host' TruSeq
+perl rdf.pl -d larvae.sqlite3 insert larvae '#host' chrY
 perl rdf.pl -d larvae.sqlite3 insert larvae '#pathogen' chrY
 #perl rdf.pl -d larvae.sqlite3 install STAR samtools bedtools
 mkdir -p host
@@ -25,14 +25,14 @@ https://moirai2.github.io/command/fastq/countseq.json
 perl moirai2.pl \
 -d larvae.sqlite3 \
 -i '$id->#read1->$input1,$id->#read2->$input2,larvae->#host->$starindex' \
--o '$id->#hostbam->$bam,$id->#hostlog->$log' \
-https://moirai2.github.io/command/STAR/align_paired_genecounts.json '$bam=host/$id.bam' '$log=host/$id.log'
+-o '$id->#hostbam->$bam,$id->#hostlog->$log,$id->#hostgenecounts->$genecounts' \
+https://moirai2.github.io/command/STAR/align_paired_genecounts.json '$bam=host/$id.bam' '$log=host/$id.log' '$genecounts=host/$id.genecounts.txt'
 
 perl moirai2.pl \
 -d larvae.sqlite3 \
 -i '$id->#read1->$input1,$id->#read2->$input2,larvae->#pathogen->$starindex' \
--o '$id->#pathogenbam->$bam,$id->#pathogenlog->$log' \
-https://moirai2.github.io/command/STAR/align_paired_genecounts.json '$bam=pathogen/$id.bam' '$log=pathogen/$id.log'
+-o '$id->#pathogenbam->$bam,$id->#pathogenlog->$log,$id->#pathogengenecounts->$genecounts' \
+https://moirai2.github.io/command/STAR/align_paired_genecounts.json '$bam=pathogen/$id.bam' '$log=pathogen/$id.log' '$genecounts=pathogen/$id.genecounts.txt'
 
 perl moirai2.pl \
 -d larvae.sqlite3 \
