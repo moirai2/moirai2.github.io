@@ -1,14 +1,20 @@
 if [ $# -gt 0 ] ; then
 runid=$1;
+read1=$2;
+read2=$3;
+hostindex=$4;
+pathogenindex=$5;
 perl rdf.pl -d larvae.sqlite3 insert larvae '#run' $runid
-perl rdf.pl -d larvae.sqlite3 insert $runid '#read1' $2
-perl rdf.pl -d larvae.sqlite3 insert $runid '#read2' $3
-perl rdf.pl -d larvae.sqlite3 insert larvae '#host' chrY
-perl rdf.pl -d larvae.sqlite3 insert larvae '#pathogen' chrY
+perl rdf.pl -d larvae.sqlite3 insert $runid '#read1' $read1
+perl rdf.pl -d larvae.sqlite3 insert $runid '#read2' $read2
+perl rdf.pl -d larvae.sqlite3 insert larvae '#host' $hostindex
+perl rdf.pl -d larvae.sqlite3 insert larvae '#pathogen' $pathogenindex
 #perl rdf.pl -d larvae.sqlite3 install STAR samtools bedtools
+fi
+
+perl rdf.pl -d larvae.sqlite3 rmexec
 mkdir -p host
 mkdir -p pathogen
-fi
 
 perl moirai2.pl -q \
 -d larvae.sqlite3 \
