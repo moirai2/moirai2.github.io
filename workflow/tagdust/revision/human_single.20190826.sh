@@ -5,7 +5,7 @@ perl rdf.pl -d tagdust.sqlite3 -q rmexec
 
 perl moirai2.pl \
 -d tagdust.sqlite3 \
--o 'tagdust->#download->$output' \
+-o 'tagdust->#reference->$output' \
 https://moirai2.github.io/database/ncbi/download_human_ribosomal_DNA.json
 
 perl moirai2.pl \
