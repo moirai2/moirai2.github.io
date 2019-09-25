@@ -5,7 +5,7 @@ perl rdf.pl -d larvae.sqlite3 insert $runid '#read1' $2
 perl rdf.pl -d larvae.sqlite3 insert $runid '#read2' $3
 perl rdf.pl -d larvae.sqlite3 insert larvae '#host' chrY
 perl rdf.pl -d larvae.sqlite3 insert larvae '#pathogen' chrY
-#perl rdf.pl -d larvae.sqlite3 install STAR samtools bedtools
+#perl rdf.pl -d larvae.sqlite3 install tagdust nexalign samtools bedtools
 fi
 
 mkdir -p host

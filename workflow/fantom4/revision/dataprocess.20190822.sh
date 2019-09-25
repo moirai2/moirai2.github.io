@@ -5,12 +5,11 @@ mkdir -p bam
 
 perl rdf.pl -d fantom4.sqlite3 -q insert fantom4 '#species' human
 perl rdf.pl -d fantom4.sqlite3 -q insert fantom4 '#species' mouse
-perl rdf.pl -d fantom4.sqlite3 -q insert human '#genome_assembly' hg18
-perl rdf.pl -d fantom4.sqlite3 -q insert mouse '#genome_assembly' mm9
 perl rdf.pl -d fantom4.sqlite3 prompt human '#rDNA' "Path to human rDNA [default is download] ? "
 perl rdf.pl -d fantom4.sqlite3 prompt mouse '#rDNA' "Path to mouse rDNA [default is download] ? "
-perl rdf.pl -d fantom4.sqlite3 prompt human '#genome' "Path to human hg18 genome [default is download] ? "
-perl rdf.pl -d fantom4.sqlite3 prompt mouse '#genome' "Path to mouse mm9 genome [default is download] ? "
+perl rdf.pl -d fantom4.sqlite3 prompt human '#genome' "Path to human genome [default is download] ? "
+perl rdf.pl -d fantom4.sqlite3 prompt mouse '#genome' "Path to mouse genome [default is download] ? "
+perl rdf.pl -d fantom4.sqlite3 install tagdust nexalign samtools bedtools
 perl rdf.pl -d fantom4.sqlite3 -q rmexec
 
 perl moirai2.pl -m 10 \
