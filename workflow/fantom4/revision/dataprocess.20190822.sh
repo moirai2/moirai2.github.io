@@ -1,16 +1,16 @@
 mkdir -p download
-mkdir -p input
 mkdir -p filtered
+mkdir -p STAR
+mkdir -p log
 mkdir -p bam
 
-perl rdf.pl -d fantom4.sqlite3 -q insert fantom4 '#species' human
-perl rdf.pl -d fantom4.sqlite3 -q insert fantom4 '#species' mouse
-perl rdf.pl -d fantom4.sqlite3 prompt human '#rDNA' "Path to human rDNA [default is download] ? "
-perl rdf.pl -d fantom4.sqlite3 prompt mouse '#rDNA' "Path to mouse rDNA [default is download] ? "
-perl rdf.pl -d fantom4.sqlite3 prompt human '#genome' "Path to human genome [default is download] ? "
-perl rdf.pl -d fantom4.sqlite3 prompt mouse '#genome' "Path to mouse genome [default is download] ? "
-perl rdf.pl -d fantom4.sqlite3 install tagdust nexalign samtools bedtools
+perl rdf.pl -d fantom4.sqlite3 prompt fantom4 '#species' "Species [default is human] ? " human
+species=`perl rdf.pl -d fantom4.sqlite3 object fantom4 '#species'`
+perl rdf.pl -d fantom4.sqlite3 prompt $species '#rDNA' "Path to $species rDNA [default is download] ? "
+perl rdf.pl -d fantom4.sqlite3 prompt $species '#genome' "Path to $species genome [default is download] ? "
+perl rdf.pl -d fantom4.sqlite3 install tagdust STAR samtools bedtools
 perl rdf.pl -d fantom4.sqlite3 -q rmexec
+exit;
 
 perl moirai2.pl -m 10 \
 -d fantom4.sqlite3 \
@@ -31,14 +31,14 @@ perl moirai2.pl -m 10 \
 -i '$root->#species->human' \
 -o 'human->#fastq->$output' \
 https://moirai2.github.io/database/fantom/fantom4DownloadHumanCAGE.json \
-'$output=input/fantom4.humanCAGE.fq.gz'
+'$output=download/fantom4.humanCAGE.fq.gz'
 
 perl moirai2.pl -m 10 \
 -d fantom4.sqlite3 \
 -i '$root->#species->mouse' \
 -o 'mouse->#fastq->$output' \
 https://moirai2.github.io/database/fantom/fantom4DownloadMouseCAGE.json \
-'$output=input/fantom4.mouseCAGE.fq.gz'
+'$output=download/fantom4.mouseCAGE.fq.gz'
 
 perl moirai2.pl -m 10 \
 -d fantom4.sqlite3 \
@@ -53,6 +53,16 @@ perl moirai2.pl -m 10 \
 https://moirai2.github.io/command/tagdust/tagdust_single.json \
 '$filtered=filtered/fantom4.${species}CAGE.fq.gz' \
 '$log=filtered/fantom4.${species}CAGE.log'
+
+perl moirai2.pl -m 10 \
+-d fantom4.sqlite3 \
+-i '$species->#genome->$reference' \
+-o '$species->#starindex->$outdir' \
+https://moirai2.github.io/command/STAR/index_reference.json \
+'$outdir=STAR/${species}' \
+'$stdout=STAR/${species}/stdout.txt' \
+'$stderr=STAR/${species}/stderr.txt' \
+'$log=STAR/${species}/log.txt' \
 
 perl moirai2.pl -m 10 \
 -d fantom4.sqlite3 \
