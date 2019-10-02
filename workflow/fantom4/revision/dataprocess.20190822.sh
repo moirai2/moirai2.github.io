@@ -65,7 +65,8 @@ perl moirai2.pl -m 10 \
 -o '$species->#filtered->$filtered,$species->#tagdustlog->$log' \
 https://moirai2.github.io/command/tagdust/tagdust_single.json \
 '$filtered=filtered/fantom4.${species}CAGE.fq.gz' \
-'$log=filtered/fantom4.${species}CAGE.log'
+'$log=filtered/fantom4.${species}CAGE.log' \
+'$artifact=filtered/fantom4.${species}CAGE.artifact.fq.gz'
 
 perl moirai2.pl -m 10 \
 -d fantom4.sqlite3 \
@@ -75,7 +76,7 @@ https://moirai2.github.io/command/STAR/index_reference.json \
 '$outdir=STAR/${species}' \
 '$stdout=STAR/${species}/stdout.txt' \
 '$stderr=STAR/${species}/stderr.txt' \
-'$log=STAR/${species}/log.txt' \
+'$log=STAR/${species}/log.txt'
 
 perl moirai2.pl -m 10 \
 -d fantom4.sqlite3 \
