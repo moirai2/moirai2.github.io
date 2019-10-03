@@ -3,6 +3,7 @@ mkdir -p filtered
 mkdir -p STAR
 mkdir -p log
 mkdir -p bam
+mkdir -p sample
 
 perl rdf.pl -d fantom4.sqlite3 prompt fantom4 '#species' "Species [default is human] ? " human
 species=`perl rdf.pl -d fantom4.sqlite3 object fantom4 '#species'`
@@ -64,24 +65,33 @@ perl moirai2.pl -m 10 \
 -i '$species->#fastq->$input,$species->#rDNA->$reference' \
 -o '$species->#filtered->$filtered,$species->#tagdustlog->$log' \
 https://moirai2.github.io/command/tagdust/tagdust_single.json \
-'$filtered=filtered/fantom4.${species}CAGE.fq.gz' \
-'$log=filtered/fantom4.${species}CAGE.log' \
-'$artifact=filtered/fantom4.${species}CAGE.artifact.fq.gz'
+'$filtered=filtered/fantom4.CAGE.$species.fq.gz' \
+'$log=filtered/fantom4.CAGE.$species.log' \
+'$artifact=filtered/fantom4.CAGE.$species.artifact.fq.gz'
 
 perl moirai2.pl -m 10 \
 -d fantom4.sqlite3 \
 -i '$species->#genome->$reference' \
 -o '$species->#starindex->$outdir' \
 https://moirai2.github.io/command/STAR/index_reference.json \
-'$outdir=STAR/${species}' \
-'$stdout=STAR/${species}/stdout.txt' \
-'$stderr=STAR/${species}/stderr.txt' \
-'$log=STAR/${species}/log.txt'
+'$outdir=STAR/$species/' \
+'$stdout=STAR/$species/stdout.txt' \
+'$stderr=STAR/$species/stderr.txt' \
+'$log=STAR/$species/log.txt'
 
 perl moirai2.pl -m 10 \
 -d fantom4.sqlite3 \
 -i '$species->#filtered->$input,$species->#starindex->$starindex' \
 -o '$species->#bam->$bam,$species->#starlog->$log' \
 https://moirai2.github.io/command/STAR/align_single.json \
-'$bam=bam/fantom4.${species}CAGE.bam' \
-'$log=bam/fantom4.${species}CAGE.log'
+'$bam=bam/fantom4.CAGE.$species.bam' \
+'$log=bam/fantom4.CAGE.$species.log'
+
+perl moirai2.pl -m 10 \
+-d fantom4.sqlite3 \
+-i '$species->#bam->$bam' \
+-o '$species->#samples->$outdir' \
+https://moirai2.github.io/command/bam/splitbydelimtoken.json \
+'$index=1' \
+'$delim=\|' \
+'$outdir=sample/$species/'
