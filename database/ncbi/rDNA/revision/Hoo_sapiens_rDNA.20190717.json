@@ -1,1 +1,0 @@
-{"https://moirai2.github.io/schema/daemon/bash":["output=\"$tmpdir/HumanrDNA.fa\"","esearch -db nucleotide -query U13369 | efetch -db nucleotide -format fasta > $output","sleep 2"],"https://moirai2.github.io/schema/daemon/output":"$output","https://moirai2.github.io/schema/daemon/singlethread":true}
