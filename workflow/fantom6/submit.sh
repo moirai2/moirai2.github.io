@@ -1,1 +1,0 @@
-revision/submit.20190930.sh
