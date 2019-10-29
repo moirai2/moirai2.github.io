@@ -22,8 +22,8 @@
 # GSE90487 => SRP093881
 
 if [ "$1" == "submit" ] ; then
-  perl rdf.pl -d fantom6.sqlite3 input fantom6 '#userid'
-  exit;
+perl rdf.pl -d fantom6.sqlite3 input fantom6 '#userid'
+exit;
 fi
 
 perl moirai2.pl \

@@ -9,12 +9,8 @@
 # ASM364042v1 GCF_003640425.1
 
 if [ "$1" == "submit" ] ; then
-runid=$2;
-read1=$3;
-read2=$3;
-perl rdf.pl -d larvae.sqlite3 insert larvae '#run' $runid
-perl rdf.pl -d larvae.sqlite3 insert $runid '#read1' $read1
-perl rdf.pl -d larvae.sqlite3 insert $runid '#read2' $read2
+perl rdf.pl -d larvae.sqlite3 input larvae '#runid'
+perl moirai2.pl -d larvae.sqlite3 -i 'larvae->#runid->$runid' -o '$runid->#read1->?,$runid->#read2->?' input "Enter raw fastq files"
 exit
 fi
 
