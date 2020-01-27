@@ -1,0 +1,1 @@
+{"https://moirai2.github.io/schema/daemon/input":["$raw","$barcodes","$outdir"],"https://moirai2.github.io/schema/daemon/bash":["splitByBarcode -b \"$barcodes\" -O $outdir $raw 2>/dev/null","gzip $outdir/*.fq","output=(`ls $outdir/*.fq.gz`)"],"https://moirai2.github.io/schema/daemon/output":"$output","https://moirai2.github.io/schema/daemon/seqcount":"$raw,$output"}
