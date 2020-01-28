@@ -44,7 +44,6 @@ elif [ "$1" == "setup" ] ; then
   -d singlecell.sqlite3 \
   -i '$singlecell->#species->Homo sapiens' \
   -o 'Homo sapiens->#genome->$path' \
-  #https://moirai2.github.io/database/genome/Homo_sapiens_hg38_chronly.json \
   https://moirai2.github.io/database/genome/Homo_sapiens_hg38_chr22.json \
   '$path=genome/hg38.fa'
 
@@ -52,8 +51,7 @@ elif [ "$1" == "setup" ] ; then
   -d singlecell.sqlite3 \
   -i '$singlecell->#species->Mus musculus' \
   -o 'Mus musculus->#genome->$path' \
-  #https://moirai2.github.io/database/genome/Mus_musculus_mm10_chronly.json \
-  https://moirai2.github.io/database/genome/Mus_musculus_mm10_chr22.json \
+  https://moirai2.github.io/database/genome/Mus_musculus_mm10_chr19.json \
   '$path=genome/mm10.fa'
 
   perl moirai2.pl -m 1 \
