@@ -3,14 +3,19 @@
 # mouse paired GSE90487 => SRP093881
 # mouse single E-MTAB-3543 =>
 # human single PRJEB8994 =>
-mkdir -p rDNA
-mkdir -p genome
-mkdir -p STAR
-mkdir -p runinfo
-mkdir -p fastq
-mkdir -p filtered
-mkdir -p bam
-mkdir -p unmap
+# umap clustering
+# gene coverage
+# kraken crona
+# expression table TPM
+mkdir -p data
+mkdir -p data/rDNA
+mkdir -p data/genome
+mkdir -p data/STAR
+mkdir -p data/runinfo
+mkdir -p data/fastq
+mkdir -p data/filtered
+mkdir -p data/bam
+mkdir -p data/unmap
 
 perl rdf.pl -d singlecell.sqlite3 -q rmexec
 if [ "$1" == "submit" ] ; then
@@ -26,7 +31,7 @@ elif [ "$1" == "setup" ] ; then
   perl rdf.pl -d singlecell.sqlite3 insert 'Mus musculus' '#assembly' 'mm10'
 
   echo "#0 Installing softwares"
-  perl rdf.pl -d singlecell.sqlite3 install splitByBarcode tagdust STAR samtools bedtools
+  perl rdf.pl -d singlecell.sqlite3 install tagdust STAR samtools bedtools
 
   echo "#1 Downloading ribosomalDNA"
   perl moirai2.pl -m 10 \
@@ -34,14 +39,14 @@ elif [ "$1" == "setup" ] ; then
   -i '$singlecell->#species->Homo sapiens' \
   -o 'Homo sapiens->#rDNA->$output' \
   /Users/ah3q/Sites/moirai2.github.io/database/ncbi/rDNA/Homo_sapiens_rDNA.json \
-  '$output=rDNA/human_rDNA.fa'
+  '$output=data/rDNA/human_rDNA.fa'
 
   perl moirai2.pl -m 10 \
   -d singlecell.sqlite3 \
   -i '$singlecell->#species->Mus musculus' \
   -o 'Mus musculus->#rDNA->$output' \
   /Users/ah3q/Sites/moirai2.github.io/database/ncbi/rDNA/Mus_musculus_rDNA.json \
-  '$output=rDNA/mouse_rDNA.fa'
+  '$output=data/rDNA/mouse_rDNA.fa'
 
   echo "#2 Downloading genomes"
   perl moirai2.pl -m 1 \
@@ -49,14 +54,14 @@ elif [ "$1" == "setup" ] ; then
   -i 'Homo sapiens->#assembly->$assembly' \
   -o '$assembly->#genome->$path' \
   /Users/ah3q/Sites/moirai2.github.io/database/genome/Homo_sapiens_hg38_chr22.json \
-  '$path=genome/$assembly.fa'
+  '$path=data/genome/$assembly.fa'
 
   perl moirai2.pl -m 1 \
   -d singlecell.sqlite3 \
   -i 'Mus musculus->#assembly->$assembly' \
   -o '$assembly->#genome->$path' \
   /Users/ah3q/Sites/moirai2.github.io/database/genome/Mus_musculus_mm10_chr19.json \
-  '$path=genome/$assembly.fa'
+  '$path=data/genome/$assembly.fa'
 
   echo "#3 Indexing genomes"
   perl moirai2.pl -m 1 \
@@ -64,10 +69,10 @@ elif [ "$1" == "setup" ] ; then
   -i '$assembly->#genome->$reference' \
   -o '$assembly->#STAR->$outdir' \
   /Users/ah3q/Sites/moirai2.github.io/command/STAR/index_reference.json \
-  '$outdir=STAR/$assembly' \
-  '$stdout=STAR/$assembly/index.stdout' \
-  '$stderr=STAR/$assembly/index.stderr' \
-  '$log=STAR/$assembly/index.log'
+  '$outdir=data/STAR/$assembly' \
+  '$stdout=data/STAR/$assembly/index.stdout' \
+  '$stderr=data/STAR/$assembly/index.stderr' \
+  '$log=data/STAR/$assembly/index.log'
   exit
 fi
 
@@ -84,8 +89,8 @@ perl moirai2.pl \
 -i 'singlecell->#studyid->$studyid' \
 -o '$studyid->#runinfo->$runinfo,$studyid->#summaryfile->$summary' \
 /Users/ah3q/Sites/moirai2.github.io/command/eutils/studyid_to_sra_info_files.json \
-'$runinfo=runinfo/$studyid.runinfo.txt' \
-'$summary=runinfo/$studyid.summary.txt'
+'$runinfo=data/runinfo/$studyid.runinfo.txt' \
+'$summary=data/runinfo/$studyid.summary.txt'
 
 echo "#3 Importing species and runinfo to database"
 perl moirai2.pl \
@@ -101,15 +106,15 @@ perl moirai2.pl \
 -i '$studyid->#Run->$runid,$runid->#LibraryLayout->PAIRED' \
 -o '$runid->#read1->$read1,$runid->#read2->$read2,$runid->#count1->$count1,$runid->#count2->$count2' \
 /Users/ah3q/Sites/moirai2.github.io/command/eutils/fastq_dump_paired.json \
-'$read1=fastq/$studyid.$runid.read1.fq.gz' \
-'$read2=fastq/$studyid.$runid.read2.fq.gz'
+'$read1=data/fastq/$studyid.$runid.read1.fq.gz' \
+'$read2=data/fastq/$studyid.$runid.read2.fq.gz'
 
 perl moirai2.pl \
 -d singlecell.sqlite3 \
 -i '$studyid->#Run->$runid,$runid->#LibraryLayout->SINGLE' \
 -o '$runid->#read1->$read1,$runid->#count1->$count1' \
 /Users/ah3q/Sites/moirai2.github.io/command/eutils/fastq_dump_single.json \
-'$read1=fastq/$studyid.$runid.read1.fq.gz'
+'$read1=data/fastq/$studyid.$runid.read1.fq.gz'
 
 echo "#5 Filtering ribosomalRNA"
 perl moirai2.pl \
@@ -117,20 +122,20 @@ perl moirai2.pl \
 -i '$studyid->#Run->$runid,$runid->#LibraryLayout->SINGLE,$runid->#read1->$input,$runid->#ScientificName->$species,$species->#rDNA->$reference' \
 -o '$runid->#tagdustlog->$log,$runid->#filtered1->$filtered,$runid->#artifact1->$artifact' \
 /Users/ah3q/Sites/moirai2.github.io/command/tagdust/tagdust_single.json \
-'$log=filtered/$studyid.$runid.log' \
-'$filtered=filtered/$studyid.$runid.filtered.read1.fq.gz' \
-'$artifact=filtered/$studyid.$runid.artifact.read1.fq.gz'
+'$log=data/filtered/$studyid.$runid.log' \
+'$filtered=data/filtered/$studyid.$runid.filtered.read1.fq.gz' \
+'$artifact=data/filtered/$studyid.$runid.artifact.read1.fq.gz'
 
 perl moirai2.pl \
 -d singlecell.sqlite3 \
 -i '$studyid->#Run->$runid,$runid->#LibraryLayout->PAIRED,$runid->#read1->$input1,$runid->#read2->$input2,$runid->#ScientificName->$species,$species->#rDNA->$reference' \
 -o '$runid->#tagdustlog->$log,$runid->#filtered1->$filtered1,$runid->#filtered2->$filtered2,$runid->#artifact1->$artifact1,$runid->#artifact2->$artifact2' \
 /Users/ah3q/Sites/moirai2.github.io/command/tagdust/tagdust_paired.json \
-'$log=filtered/$studyid.$runid.log' \
-'$filtered1=filtered/$studyid.$runid.filtered.read1.fq.gz' \
-'$filtered2=filtered/$studyid.$runid.filtered.read2.fq.gz' \
-'$artifact1=filtered/$studyid.$runid.artifact.read1.fq.gz' \
-'$artifact2=filtered/$studyid.$runid.artifact.read2.fq.gz'
+'$log=data/filtered/$studyid.$runid.log' \
+'$filtered1=data/filtered/$studyid.$runid.filtered.read1.fq.gz' \
+'$filtered2=data/filtered/$studyid.$runid.filtered.read2.fq.gz' \
+'$artifact1=data/filtered/$studyid.$runid.artifact.read1.fq.gz' \
+'$artifact2=data/filtered/$studyid.$runid.artifact.read2.fq.gz'
 
 echo "#6 Aligning to genome"
 perl moirai2.pl \
@@ -138,16 +143,16 @@ perl moirai2.pl \
 -i '$studyid->#Run->$runid,$runid->#LibraryLayout->SINGLE,$runid->#filtered1->$input,$runid->#ScientificName->$species,$species->#assembly->$assembly,$assembly->#STAR->$starindex' \
 -o '$runid->#bam->$bam,$runid->#bamlog->$log' \
 /Users/ah3q/Sites/moirai2.github.io/command/STAR/align_single.json \
-'$bam=bam/$studyid.$runid.bam' \
-'$log=bam/$studyid.$runid.log'
+'$bam=data/bam/$studyid.$runid.bam' \
+'$log=data/bam/$studyid.$runid.log'
 
 perl moirai2.pl \
 -d singlecell.sqlite3 \
 -i '$studyid->#Run->$runid,$runid->#LibraryLayout->PAIRED,$runid->#filtered1->$input1,$runid->#filtered2->$input2,$runid->#ScientificName->$species,$species->#assembly->$assembly,$assembly->#STAR->$starindex' \
 -o '$runid->#bam->$bam,$runid->#bamlog->$log' \
 /Users/ah3q/Sites/moirai2.github.io/command/STAR/align_paired.json \
-'$bam=bam/$studyid.$runid.bam' \
-'$log=bam/$studyid.$runid.log'
+'$bam=data/bam/$studyid.$runid.bam' \
+'$log=data/bam/$studyid.$runid.log'
 
 echo "#7 Remove multimap from unmap"
 perl moirai2.pl \
@@ -155,12 +160,14 @@ perl moirai2.pl \
 -i '$studyid->#Run->$runid,$runid->#LibraryLayout->SINGLE,$runid->#bam->$input' \
 -o '$runid->#unmap1->$unmap1,$runid->#multicount->$multicount' \
 /Users/ah3q/Sites/moirai2.github.io/command/STAR/remove_multimap_single.json \
-'$unmap1=unmap/$studyid.$runid.unmap1.fq.gz'
+'$unmap1=data/unmap/$studyid.$runid.unmap1.fq.gz'
 
 perl moirai2.pl \
 -d singlecell.sqlite3 \
 -i '$studyid->#Run->$runid,$runid->#LibraryLayout->PAIRED,$runid->#bam->$input' \
 -o '$runid->#unmap1->$unmap1,$runid->#unmap2->$unmap2,$runid->#multicount->$multicount' \
 /Users/ah3q/Sites/moirai2.github.io/command/STAR/remove_multimap_paired.json \
-'$unmap1=unmap/$studyid.$runid.unmap1.fq.gz' \
-'$unmap2=unmap/$studyid.$runid.unmap2.fq.gz'
+'$unmap1=data/unmap/$studyid.$runid.unmap1.fq.gz' \
+'$unmap2=data/unmap/$studyid.$runid.unmap2.fq.gz'
+
+echo "#8 Filter artifacts from unmap"
