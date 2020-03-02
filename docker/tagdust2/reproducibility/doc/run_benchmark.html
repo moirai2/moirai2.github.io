@@ -1,0 +1,2209 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta name="author" content="Timo Lassmann">
+  <title>The TagDust2 Benchmark</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" href="../../reproducibility/doc/style.css">
+</head>
+<body>
+<header>
+<h1 class="title">The TagDust2 Benchmark</h1>
+<h2 class="author">Timo Lassmann</h2>
+<h3 class="date">11 Sepember 2014</h3>
+</header>
+<nav id="TOC">
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#figure-1">Figure 1:</a></li>
+<li><a href="#figure-2-5-comparison-to-btrim-cutadapt-and-fastx_barcode_clipper.">Figure 2-5: Comparison to BTRIM, cutadapt and fastx_barcode_clipper.</a><ul>
+<li><a href="#simreads">Simreads</a><ul>
+<li><a href="#simulation-without-linkers">Simulation without linkers:</a></li>
+<li><a href="#simulation-with-linkers">Simulation with linkers:</a></li>
+</ul></li>
+<li><a href="#notes-on-btrim-fastx-and-cutadapt-used-in-the-benchmark">Notes on BTRIM, FastX and Cutadapt used in the benchmark</a><ul>
+<li><a href="#program-versions">Program Versions:</a></li>
+</ul></li>
+<li><a href="#command-line-options-used-in-the-benchmark">Command line options used in the benchmark</a><ul>
+<li><a href="#tagdust">TagDust</a></li>
+<li><a href="#fastx_barcode_splitter.pl-1">fastx_barcode_splitter.pl</a></li>
+<li><a href="#cutadapt-1">Cutadapt</a></li>
+<li><a href="#fastx_barcode_splitter.pl-after-cutadapt">fastx_barcode_splitter.pl after cutadapt</a></li>
+<li><a href="#btrim-1">Btrim</a></li>
+</ul></li>
+<li><a href="#evaluation">Evaluation</a><ul>
+<li><a href="#notes-on-evalres">Notes on <strong>evalres</strong></a></li>
+</ul></li>
+<li><a href="#plotting">Plotting</a><ul>
+<li><a href="#file-plotting.r">File: plotting.R</a></li>
+</ul></li>
+<li><a href="#file-run.mk">File: run.mk</a><ul>
+<li><a href="#file-barread.sh">File: barread.sh</a></li>
+<li><a href="#file-5barread3.sh">File: 5barread3.sh</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#figure-6">Figure 6</a><ul>
+<li><a href="#file-process_umi_data.sh">File: process_umi_data.sh</a></li>
+<li><a href="#file-make_umi_plots.r">File: make_umi_plots.R</a></li>
+</ul></li>
+<li><a href="#table-1-comparison-to-illuminas-bcl2fastq.">Table 1: Comparison to Illumina’s bcl2fastq.</a><ul>
+<li><a href="#run-the-default-pipeline-on-the-validation-data-containing-barcodes">Run the default pipeline on the validation data containing barcodes:</a></li>
+<li><a href="#run-the-pipeline-without-de-multiplecing-and-use-tagdust2.">Run the pipeline without de-multiplecing and use TagDust2.</a></li>
+<li><a href="#run-tagdust2">Run TagDust2</a></li>
+<li><a href="#comparison">Comparison</a></li>
+</ul></li>
+<li><a href="#table-2-summary-of-single-cell-extracted-reads.">Table 2: Summary of Single Cell extracted reads.</a></li>
+<li><a href="#additional-files">Additional files:</a><ul>
+<li><a href="#file-figure1.tex">File: Figure1.tex:</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="introduction">Introduction</h1>
+<p>The purpose of this document is to provide a complete description and the supporting code to reproduce the figures from the TagDust2 paper.</p>
+<p>Typing <strong>make</strong> at the top level directory runs a C parser to extract bits of code embedded in this document. Among these is an additional file <strong>run.mk</strong>. Running:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">bash-3.2</span>$ make -f run.mk </code></pre>
+<p>will start re-running the benchmark to make Figures 1-5.</p>
+<p>The other figures and table require downloading large datasets which are not included in this package.</p>
+<p>The following chapters describe the code for Figures 1-6 and Table 1 and 2.</p>
+<h1 id="figure-1">Figure 1:</h1>
+<p>The figure is a drawing made in tikz <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>. The code is listed <a href="#file-figure1.tex">here</a>.</p>
+<p>To make the pdf version simply:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">bash-3.2</span>$ pdflatex Figure1.tex</code></pre>
+<h1 id="figure-2-5-comparison-to-btrim-cutadapt-and-fastx_barcode_clipper.">Figure 2-5: Comparison to BTRIM, cutadapt and fastx_barcode_clipper.</h1>
+<p>The purpose to these benchmarks is to compare the accuracy and number of reads extracted by running different extraction programs.</p>
+<p>All benchmarks are carried out using the following logic and programs</p>
+<ol type="1">
+<li>generate dataset using the program <strong>simreads</strong></li>
+<li>run program X,Y and Z</li>
+<li>compare results using the program <strong>evalres</strong></li>
+</ol>
+<h2 id="simreads">Simreads</h2>
+<p><em>SIMreads</em> is a simple C program distributed alongside TagDust2 to simulate raw NGS reads, including barcodes, linkers and adaptors. The syntax is fairly specific to the types of benchmarks conducted in the TagDust2 paper but perhaps of some general use.</p>
+<p>Apart from simulating the reads, <em>simreads</em> will also generate a number of auxiliary files needed by the de-multiplex programs used in the benchmark. These include:</p>
+<ul>
+<li>TagDust2 architecture files (<em>XXX_tagdust_arch.txt</em>)</li>
+<li>BTRIM pattern file (<em>XXX_btrim_pattern.txt</em>)</li>
+<li>FastX barcode file (<em>XXX_fastxbarcodefile.txt</em>)</li>
+</ul>
+<p>Here are the command line options used:</p>
+<h3 id="simulation-without-linkers">Simulation without linkers:</h3>
+<p>Here I simulate NGS sequences containing a barcode at the 5’ end followed by the read we wish to extract:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="ot">error=$(</span><span class="kw">../../src/simreads</span> <span class="ot">$barcodes</span>  -seed 42 -sim_barnum <span class="ot">${numbar[$c]}</span>  -sim_readlen 20 -sim_readlen_mod 0 -sim_numseq 100000 -sim_endloss 0 -sim_random_frac 0.1 -o <span class="ot">$name</span>   -sim_error_rate <span class="ot">${array[$j]}</span>  <span class="kw">2&gt;&amp;1</span> <span class="ot">)</span></code></pre>
+<h4 id="the-important-options-include">The important options include:</h4>
+<ul>
+<li><strong>$barcodes</strong> - points to a specific barcode file generated by the program design_edit_metric_tags.py from the EditTag package<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a>. To ensure reproducibility I distribute TagDust2 with a selection of barcode files found in the dev/ directory.</li>
+<li><strong>sim_error_rate</strong> - the sequencer error rate. To generate the paper figures I vary the error rate from 1 to 3 percent in 0.5% increments.<br /></li>
+<li><strong>sim_barnum</strong> - specifies the number of barcodes used from the files pointed at by <strong>$barcodes</strong>.</li>
+<li><strong>sim_readlen</strong> - specifies the length of the reads.</li>
+<li><strong>sim_numseq</strong> - the number of sequences simulated.</li>
+<li><strong>sim_random_frac</strong> - the fraction of sequences which are completely random. I.e. these should not be extracted.</li>
+</ul>
+<h3 id="simulation-with-linkers">Simulation with linkers:</h3>
+<p>Here I simulate NGS sequences as before but add 5’ and 3’ linkers:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="ot">error=$(</span><span class="kw">../../src/simreads</span> <span class="ot">$barcodes</span>  -sim_5seq agggaggacgatgcgg   -sim_3seq gtgtcagtcacttccagcgg  -seed 42 -sim_barnum <span class="ot">${numbar[$c]}</span>  -sim_readlen 20 -sim_readlen_mod 0 -sim_numseq 100000 -sim_endloss 0 -sim_random_frac 0.1 -o <span class="ot">$name</span>   -sim_error_rate <span class="ot">${array[$j]}</span>  <span class="kw">2&gt;&amp;1</span> <span class="ot">)</span></code></pre>
+<h4 id="the-important-options-include-1">The important options include:</h4>
+<ul>
+<li><strong>sim_5seq</strong> - sequence appended to the 5’ end (agggaggacgatgcgg)</li>
+<li><strong>sim_3seq</strong> - sequence appended to the 3’ end (gtgtcagtcacttccagcgg)</li>
+</ul>
+<h2 id="notes-on-btrim-fastx-and-cutadapt-used-in-the-benchmark">Notes on BTRIM, FastX and Cutadapt used in the benchmark</h2>
+<p>All programs usedfor the benchmark are distributed alongside TagDust2 distribution in /reproducibiliy/bin.</p>
+<h3 id="program-versions">Program Versions:</h3>
+<h4 id="btrim">BTRIM:</h4>
+<p>btrim64 - downloaded from:</p>
+<p>http://graphics.med.yale.edu/trim/</p>
+<p>btrim64 28-Jul-2014 15:56 35K</p>
+<p>(version unknown)</p>
+<h4 id="cutadapt">cutadapt:</h4>
+<p>Version 1.3</p>
+<h4 id="fastx_barcode_splitter.pl">fastx_barcode_splitter.pl</h4>
+<p>fastx_0.0.13</p>
+<h2 id="command-line-options-used-in-the-benchmark">Command line options used in the benchmark</h2>
+<h3 id="tagdust">TagDust</h3>
+<p>TagDust is run in two different modes:</p>
+<ol type="1">
+<li>Basic mode - only one architecture is given.</li>
+<li>Auto-detect mode - all architectures used in the <strong>entire</strong> benchmark are given and TagDust2 has to figure out which one to use.</li>
+</ol>
+<h4 id="basic-command">Basic command</h4>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="ot">error=$(</span> <span class="kw">../../src/tagdust</span> -t 80  -seed 42  <span class="ot">$name</span> -arch <span class="ot">$arch</span> -o <span class="ot">$outfile</span> <span class="kw">2&gt;&amp;1</span> <span class="ot">)</span></code></pre>
+<ul>
+<li><strong>$arch</strong> - name of the file containing the architecture used in a particular test.</li>
+<li><strong>$name</strong> - name of the input file.</li>
+<li><strong>$outfile</strong> - name of the output file(s).</li>
+</ul>
+<h4 id="auto-detect-architecture">Auto-detect architecture</h4>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="ot">error=$(</span> <span class="kw">../../src/tagdust</span> -t 80  -seed 42  <span class="ot">$name</span> -arch all_arch.txt -o <span class="ot">$outfile</span> <span class="kw">2&gt;&amp;1</span> <span class="ot">)</span>
+</code></pre>
+<p>Here TagDust2 will search for the appropriate architecture in the file <strong>all_arch.txt</strong> no matter what the input is. Essentially this is how TagDust2 should be used in production environments. The user or operator specifies all the possible architectures based on the library preparation protocols used and TagDust2 automatically figures out which one is appropriate for each set of raw output files.</p>
+<h3 id="fastx_barcode_splitter.pl-1">fastx_barcode_splitter.pl</h3>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="ot">error=$(</span>  <span class="kw">cat</span> <span class="ot">$name</span> <span class="kw">|</span> <span class="kw">../bin/fastx_barcode_splitter.pl</span> --bcfile <span class="ot">$arch</span> --prefix <span class="ot">$outfile</span> -bol <span class="kw">2&gt;&amp;1</span><span class="ot">)</span></code></pre>
+<p>The $arch variable contains a link to the file containing the barcodes usedto simulate the sequences.</p>
+<h3 id="cutadapt-1">Cutadapt</h3>
+<p>Cutadapt is run first, then the output is de-multiplexed by fastx_barcode_splitter.pl.</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="ot">error=$(</span> <span class="kw">../bin/cutadapt</span> --discard-untrimmed -n 2 --front agggaggacgatgcgg    --adapter=gtgtcagtcacttccagcgg  <span class="ot">$name</span>   -o  <span class="ot">$outfile</span>  <span class="kw">2&gt;&amp;1</span><span class="ot">)</span></code></pre>
+<h3 id="fastx_barcode_splitter.pl-after-cutadapt">fastx_barcode_splitter.pl after cutadapt</h3>
+<p>Here is the command to de-multiplex the output of cutadapt.</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="ot">error=$(</span>  <span class="kw">cat</span> <span class="ot">$cutadaptout</span> <span class="kw">|</span> <span class="kw">../bin/fastx_barcode_splitter.pl</span> --bcfile <span class="ot">$arch</span> --prefix <span class="ot">$outfile</span> -bol <span class="kw">2&gt;&amp;1</span><span class="ot">)</span></code></pre>
+<h3 id="btrim-1">Btrim</h3>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="ot">error=$(</span> <span class="kw">../bin/btrim64</span> -p <span class="ot">$arch</span>  -t <span class="ot">$name</span> -o <span class="ot">$outfile</span> -l 18 -B  <span class="kw">2&gt;&amp;1</span><span class="ot">)</span></code></pre>
+<p>The file <em>$arch</em> contains the barcode sequences and the linkers.</p>
+<h2 id="evaluation">Evaluation</h2>
+<p>During the simulation simreads adds the following labels to all reads:</p>
+<ol type="1">
+<li><strong>READ</strong> or <strong>RANDOM</strong> - indicating whether the sequence is a random background sequence or not.</li>
+<li><strong>SEQ</strong> the actual read sequence before applying errors.</li>
+<li><strong>RBC</strong> the barcode sequence used for this read.</li>
+<li><strong>BARNUM</strong> the index of the barcode sequence.</li>
+</ol>
+<p>Here is an example of a simulated read:</p>
+<table class="sourceCode bash numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash"><span class="kw">@READ0;SEQ</span>:ACGGGGGTGCTTTCAATTGT<span class="kw">;RBC</span>:ACCA<span class="kw">;BARNUM</span>:7
+<span class="kw">agggaggacgatgcggACCAACGGGGGTGCTTTCAATTGTgtgtcagtcacttccagcgg</span>
+<span class="kw">+</span>
+<span class="kw">IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII</span></code></pre></td></tr></table>
+<p><strong>READ0</strong> indicates that this is the first simulated sequence. The 7th barcode “<em>ACCA</em>” was used to index this read. Sequences in small caps are linkers added to either end.</p>
+<p>The program <strong>evalres</strong>, part of the TagDust2 distribution, examines the output of the various programs and evaluates their performance.</p>
+<h3 id="notes-on-evalres">Notes on <strong>evalres</strong></h3>
+<p>The examination of the results works in the following ways:</p>
+<ol type="1">
+<li><p>firstly all output files are scanned. Each file labelled with the most frequently observed barcode in the file. If this results in an inconsistency, for example two files claiming to correspond to library 7 with the barcode “<em>ACCA</em>” the program quits with an error message.</p></li>
+<li><p>Since we know the number of reads simulated and the fraction of <em>random</em> sequences we can compute the number of unextracted reads.</p></li>
+<li>Calculating sensitivity and specificity. True positives (TP), false positives (FP), true negatives (TN) and false negatives (FN) are assigned in the following manner:
+<ul>
+<li>TP - number of reads in file <strong>X</strong> with barcode matching the file label (from step 1).</li>
+<li>FP - number of reads in file <strong>X</strong> with barcodes not matching the file label. In other words these could be reads from one library assigned to another. In addition FP include random sequences wrongly assigned to a particular barcode.</li>
+<li>TN - number of random sequences not present in any of of the labelled files.</li>
+<li>FN - number of reads containing a barcode but absent from any of the labelled files.</li>
+</ul></li>
+</ol>
+<h2 id="plotting">Plotting</h2>
+<p>Here is the R code used to make figures 2-5.</p>
+<h3 id="file-plotting.r">File: plotting.R</h3>
+<table class="sourceCode R numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+</pre></td><td class="sourceCode"><pre><code class="sourceCode r">
+<span class="kw">library</span>(ggplot2)
+<span class="kw">library</span>(gplots)
+<span class="kw">library</span>(scales)
+<span class="kw">require</span>(<span class="st">&quot;reshape&quot;</span>)
+
+yaxis_label_format &lt;-<span class="st"> </span>function(x) {
+  lab &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&#39;%0.2f&#39;</span>, x) <span class="co"># Format the strings as HH:MM:SS</span>
+}
+
+mat =<span class="st"> </span><span class="kw">read.table</span>(<span class="st">&quot;barread_4nt_4r.tsv&quot;</span>,<span class="dt">header =</span>T,<span class="dt">sep=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>)
+mat$barcodes =<span class="st"> </span><span class="kw">paste</span>(mat$barcodes, <span class="st">&quot;Barcodes&quot;</span>)
+mat$barcodes  =<span class="st"> </span><span class="kw">factor</span>(mat$barcodes, <span class="dt">levels=</span><span class="kw">c</span>(<span class="st">&#39;8 Barcodes&#39;</span>,<span class="st">&#39;24 Barcodes&#39;</span>,<span class="st">&#39;48 Barcodes&#39;</span>))
+s =<span class="st"> </span><span class="kw">subset</span>(mat,mat$Program !=<span class="st"> &quot;tagdustallarch&quot;</span>)
+s$Program  =<span class="st"> </span><span class="kw">factor</span>(s$Program, <span class="dt">levels=</span><span class="kw">c</span>(<span class="st">&#39;tagdust&#39;</span>,<span class="st">&#39;fastx&#39;</span>,<span class="st">&#39;btrim&#39;</span>))
+m =<span class="st"> </span><span class="kw">melt</span>(s, <span class="dt">id=</span><span class="kw">c</span>(<span class="st">&quot;Program&quot;</span>,<span class="st">&quot;simerror&quot;</span>,<span class="st">&quot;barcodes&quot;</span>),<span class="dt">measure.vars =</span> <span class="kw">c</span>(<span class="st">&quot;Recall&quot;</span>, <span class="st">&quot;Precision&quot;</span>))
+<span class="kw">ggplot</span>(m, <span class="kw">aes</span>(<span class="dt">x =</span> simerror,<span class="dt">y =</span> value ,<span class="dt">color=</span>Program, <span class="dt">fill=</span><span class="kw">factor</span>(Program))) +<span class="st"> </span><span class="kw">geom_line</span>()  +<span class="kw">facet_grid</span>(<span class="dt">scales=</span><span class="st">&quot;free&quot;</span>, variable ~<span class="st"> </span>barcodes  ) +<span class="st">   </span><span class="kw">scale_x_continuous</span>(<span class="dt">breaks=</span><span class="kw">c</span>(<span class="fl">0.01</span>,<span class="fl">0.015</span>,<span class="fl">0.02</span>,<span class="fl">0.025</span>,<span class="fl">0.03</span>), <span class="dt">labels =</span> <span class="kw">expression</span>(<span class="st">&quot;1&quot;</span>,<span class="st">&quot;1.5&quot;</span>,<span class="st">&quot;2&quot;</span>,<span class="st">&quot;2.5&quot;</span>,<span class="st">&quot;3&quot;</span>)) +<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;Simulated Error Rate (%)&quot;</span>) +<span class="st"> </span><span class="kw">scale_y_continuous</span>(<span class="dt">labels=</span>yaxis_label_format)+<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;&quot;</span>)
+<span class="kw">ggsave</span>(<span class="st">&quot;Figure2.pdf&quot;</span>,<span class="dt">width=</span><span class="dv">8</span>,<span class="dt">height=</span><span class="dv">4</span>,<span class="dt">dpi =</span> <span class="dv">300</span>)
+
+mat =<span class="st"> </span><span class="kw">read.table</span>(<span class="st">&quot;barread_6nt_4r.tsv&quot;</span>,<span class="dt">header =</span>T,<span class="dt">sep=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>)
+mat$barcodes =<span class="st"> </span><span class="kw">paste</span>(mat$barcodes, <span class="st">&quot;Barcodes&quot;</span>)
+mat$barcodes  =<span class="st"> </span><span class="kw">factor</span>(mat$barcodes, <span class="dt">levels=</span><span class="kw">c</span>(<span class="st">&#39;8 Barcodes&#39;</span>,<span class="st">&#39;24 Barcodes&#39;</span>,<span class="st">&#39;48 Barcodes&#39;</span>))
+s =<span class="st"> </span><span class="kw">subset</span>(mat,mat$Program !=<span class="st"> &quot;tagdustallarch&quot;</span>)
+s$Program  =<span class="st"> </span><span class="kw">factor</span>(s$Program, <span class="dt">levels=</span><span class="kw">c</span>(<span class="st">&#39;tagdust&#39;</span>,<span class="st">&#39;fastx&#39;</span>,<span class="st">&#39;btrim&#39;</span>))
+m =<span class="st"> </span><span class="kw">melt</span>(s, <span class="dt">id=</span><span class="kw">c</span>(<span class="st">&quot;Program&quot;</span>,<span class="st">&quot;simerror&quot;</span>,<span class="st">&quot;barcodes&quot;</span>),<span class="dt">measure.vars =</span> <span class="kw">c</span>(<span class="st">&quot;Recall&quot;</span>, <span class="st">&quot;Precision&quot;</span>))
+<span class="kw">ggplot</span>(m, <span class="kw">aes</span>(<span class="dt">x =</span> simerror,<span class="dt">y =</span> value ,<span class="dt">color=</span>Program, <span class="dt">fill=</span><span class="kw">factor</span>(Program))) +<span class="st"> </span><span class="kw">geom_line</span>()  +<span class="kw">facet_grid</span>(<span class="dt">scales=</span><span class="st">&quot;free&quot;</span>, variable ~<span class="st"> </span>barcodes  ) +<span class="st">   </span><span class="kw">scale_x_continuous</span>(<span class="dt">breaks=</span><span class="kw">c</span>(<span class="fl">0.01</span>,<span class="fl">0.015</span>,<span class="fl">0.02</span>,<span class="fl">0.025</span>,<span class="fl">0.03</span>), <span class="dt">labels =</span> <span class="kw">expression</span>(<span class="st">&quot;1&quot;</span>,<span class="st">&quot;1.5&quot;</span>,<span class="st">&quot;2&quot;</span>,<span class="st">&quot;2.5&quot;</span>,<span class="st">&quot;3&quot;</span>)) +<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;Simulated Error Rate (%)&quot;</span>) +<span class="st"> </span><span class="kw">scale_y_continuous</span>(<span class="dt">labels=</span>yaxis_label_format)+<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;&quot;</span>)
+<span class="kw">ggsave</span>(<span class="st">&quot;Figure3.pdf&quot;</span>,<span class="dt">width=</span><span class="dv">8</span>,<span class="dt">height=</span><span class="dv">4</span>,<span class="dt">dpi =</span> <span class="dv">300</span>)
+
+mat =<span class="st"> </span><span class="kw">read.table</span>(<span class="st">&quot;5barread3_4nt_4r.tsv&quot;</span>,<span class="dt">header =</span>T,<span class="dt">sep=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>)
+mat$barcodes =<span class="st"> </span><span class="kw">paste</span>(mat$barcodes, <span class="st">&quot;Barcodes&quot;</span>)
+mat$barcodes  =<span class="st"> </span><span class="kw">factor</span>(mat$barcodes, <span class="dt">levels=</span><span class="kw">c</span>(<span class="st">&#39;8 Barcodes&#39;</span>,<span class="st">&#39;24 Barcodes&#39;</span>,<span class="st">&#39;48 Barcodes&#39;</span>))
+s =<span class="st"> </span><span class="kw">subset</span>(mat,mat$Program !=<span class="st"> &quot;tagdustallarch&quot;</span>)
+s$Program  =<span class="st"> </span><span class="kw">factor</span>(s$Program, <span class="dt">levels=</span><span class="kw">c</span>(<span class="st">&#39;tagdust&#39;</span>,<span class="st">&#39;fastx&#39;</span>,<span class="st">&#39;btrim&#39;</span>))
+m =<span class="st"> </span><span class="kw">melt</span>(s, <span class="dt">id=</span><span class="kw">c</span>(<span class="st">&quot;Program&quot;</span>,<span class="st">&quot;simerror&quot;</span>,<span class="st">&quot;barcodes&quot;</span>),<span class="dt">measure.vars =</span> <span class="kw">c</span>(<span class="st">&quot;Recall&quot;</span>, <span class="st">&quot;Precision&quot;</span>))
+<span class="kw">ggplot</span>(m, <span class="kw">aes</span>(<span class="dt">x =</span> simerror,<span class="dt">y =</span> value ,<span class="dt">color=</span>Program, <span class="dt">fill=</span><span class="kw">factor</span>(Program))) +<span class="st"> </span><span class="kw">geom_line</span>()  +<span class="kw">facet_grid</span>(<span class="dt">scales=</span><span class="st">&quot;free&quot;</span>, variable ~<span class="st"> </span>barcodes  ) +<span class="st">   </span><span class="kw">scale_x_continuous</span>(<span class="dt">breaks=</span><span class="kw">c</span>(<span class="fl">0.01</span>,<span class="fl">0.015</span>,<span class="fl">0.02</span>,<span class="fl">0.025</span>,<span class="fl">0.03</span>), <span class="dt">labels =</span> <span class="kw">expression</span>(<span class="st">&quot;1&quot;</span>,<span class="st">&quot;1.5&quot;</span>,<span class="st">&quot;2&quot;</span>,<span class="st">&quot;2.5&quot;</span>,<span class="st">&quot;3&quot;</span>)) +<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;Simulated Error Rate (%)&quot;</span>) +<span class="st"> </span><span class="kw">scale_y_continuous</span>(<span class="dt">labels=</span>yaxis_label_format) +<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;&quot;</span>)
+<span class="kw">ggsave</span>(<span class="st">&quot;Figure4.pdf&quot;</span>,<span class="dt">width=</span><span class="dv">8</span>,<span class="dt">height=</span><span class="dv">4</span>,<span class="dt">dpi =</span> <span class="dv">300</span>)
+
+
+mat =<span class="st"> </span><span class="kw">read.table</span>(<span class="st">&quot;5barread3_6nt_4r.tsv&quot;</span>,<span class="dt">header =</span>T,<span class="dt">sep=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>)
+mat$barcodes =<span class="st"> </span><span class="kw">paste</span>(mat$barcodes, <span class="st">&quot;Barcodes&quot;</span>)
+mat$barcodes  =<span class="st"> </span><span class="kw">factor</span>(mat$barcodes, <span class="dt">levels=</span><span class="kw">c</span>(<span class="st">&#39;8 Barcodes&#39;</span>,<span class="st">&#39;24 Barcodes&#39;</span>,<span class="st">&#39;48 Barcodes&#39;</span>))
+s =<span class="st"> </span><span class="kw">subset</span>(mat,mat$Program !=<span class="st"> &quot;tagdustallarch&quot;</span>)
+s$Program  =<span class="st"> </span><span class="kw">factor</span>(s$Program, <span class="dt">levels=</span><span class="kw">c</span>(<span class="st">&#39;tagdust&#39;</span>,<span class="st">&#39;fastx&#39;</span>,<span class="st">&#39;btrim&#39;</span>))
+m =<span class="st"> </span><span class="kw">melt</span>(s, <span class="dt">id=</span><span class="kw">c</span>(<span class="st">&quot;Program&quot;</span>,<span class="st">&quot;simerror&quot;</span>,<span class="st">&quot;barcodes&quot;</span>),<span class="dt">measure.vars =</span> <span class="kw">c</span>(<span class="st">&quot;Recall&quot;</span>, <span class="st">&quot;Precision&quot;</span>))
+<span class="kw">ggplot</span>(m, <span class="kw">aes</span>(<span class="dt">x =</span> simerror,<span class="dt">y =</span> value ,<span class="dt">color=</span>Program, <span class="dt">fill=</span><span class="kw">factor</span>(Program))) +<span class="st"> </span><span class="kw">geom_line</span>()  +<span class="kw">facet_grid</span>(<span class="dt">scales=</span><span class="st">&quot;free&quot;</span>, variable ~<span class="st"> </span>barcodes  ) +<span class="st">   </span><span class="kw">scale_x_continuous</span>(<span class="dt">breaks=</span><span class="kw">c</span>(<span class="fl">0.01</span>,<span class="fl">0.015</span>,<span class="fl">0.02</span>,<span class="fl">0.025</span>,<span class="fl">0.03</span>), <span class="dt">labels =</span> <span class="kw">expression</span>(<span class="st">&quot;1&quot;</span>,<span class="st">&quot;1.5&quot;</span>,<span class="st">&quot;2&quot;</span>,<span class="st">&quot;2.5&quot;</span>,<span class="st">&quot;3&quot;</span>)) +<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;Simulated Error Rate (%)&quot;</span>) +<span class="st"> </span><span class="kw">scale_y_continuous</span>(<span class="dt">labels=</span>yaxis_label_format)+<span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;&quot;</span>)
+<span class="kw">ggsave</span>(<span class="st">&quot;Figure5.pdf&quot;</span>,<span class="dt">width=</span><span class="dv">8</span>,<span class="dt">height=</span><span class="dv">4</span>,<span class="dt">dpi =</span> <span class="dv">300</span>)
+
+</code></pre></td></tr></table>
+<h2 id="file-run.mk">File: run.mk</h2>
+<p>Runs all the scripts to make the paper figures 2-5. At first all the test datasets are generated once and their corresponding TagDust2 architecture files are collected. The file containing all architectures is then used to see whether TagDust2 can automatically detect the correct architectures when the actual benchmark is run later on.</p>
+<table class="sourceCode Makefile numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+</pre></td><td class="sourceCode"><pre><code class="sourceCode makefile">
+<span class="ot">.PHONY:</span><span class="dt">  message benchmark rplot</span>
+
+<span class="dv">benchmark:</span><span class="dt"> Figure1.pdf Figure2.pdf</span>
+    <span class="ch">@</span><span class="fu">echo Done</span>
+
+<span class="dv">Figure1.pdf:</span><span class="dt"> Figure1.tex</span>
+    pdflatex <span class="ch">$&lt;</span>;
+
+<span class="dv">Figure2.pdf:</span><span class="dt"> barread_6nt_4r.tsv barread_4nt_4r.tsv 5barread3_4nt_4r.tsv 5barread3_6nt_4r.tsv</span>
+    R --slave --vanilla &lt; plotting.R
+    rm Rplots.pdf
+
+
+<span class="dv">barread_4nt_4r.tsv:</span><span class="dt"> barread_results.txt</span>
+    cat barread_results.txt | grep _4nt_ | awk <span class="st">&#39;BEGIN{print &quot;Program\tsimerror\tbarcodes\tRecall\tSpecificity\tPrecision\tKappa&quot;} {if(NR&gt;0){x = split(</span><span class="ch">$$</span><span class="st">1,a,&quot;_&quot;);printf &quot;%s\t%f\t%f\t%f\t%f\t%f\t%f\n&quot; ,  a[1],a[2],a[3],</span><span class="ch">$$</span><span class="st">2,</span><span class="ch">$$</span><span class="st">3,</span><span class="ch">$$</span><span class="st">4,</span><span class="ch">$$</span><span class="st">5 }}&#39;</span> &gt; barread_4nt_4r.tsv
+    
+<span class="dv">5barread3_4nt_4r.tsv:</span><span class="dt"> 5barread3_results.txt</span>
+    cat 5barread3_results.txt |  grep _4nt_ | awk <span class="st">&#39;BEGIN{print &quot;Program\tsimerror\tbarcodes\tRecall\tSpecificity\tPrecision\tKappa&quot;} {if(NR&gt;0){x = split(</span><span class="ch">$$</span><span class="st">1,a,&quot;_&quot;);printf &quot;%s\t%f\t%f\t%f\t%f\t%f\t%f\n&quot; ,  a[1],a[2],a[3],</span><span class="ch">$$</span><span class="st">2,</span><span class="ch">$$</span><span class="st">3,</span><span class="ch">$$</span><span class="st">4,</span><span class="ch">$$</span><span class="st">5 }}&#39;</span> &gt; 5barread3_4nt_4r.tsv
+
+<span class="dv">barread_6nt_4r.tsv:</span><span class="dt"> barread_results.txt</span>
+    cat barread_results.txt | grep _6nt_ | awk <span class="st">&#39;BEGIN{print &quot;Program\tsimerror\tbarcodes\tRecall\tSpecificity\tPrecision\tKappa&quot;} {if(NR&gt;0){x = split(</span><span class="ch">$$</span><span class="st">1,a,&quot;_&quot;);printf &quot;%s\t%f\t%f\t%f\t%f\t%f\t%f\n&quot; ,  a[1],a[2],a[3],</span><span class="ch">$$</span><span class="st">2,</span><span class="ch">$$</span><span class="st">3,</span><span class="ch">$$</span><span class="st">4,</span><span class="ch">$$</span><span class="st">5 }}&#39;</span> &gt; barread_6nt_4r.tsv
+    
+<span class="dv">5barread3_6nt_4r.tsv:</span><span class="dt"> 5barread3_results.txt</span>
+    cat 5barread3_results.txt |  grep _6nt_ | awk <span class="st">&#39;BEGIN{print &quot;Program\tsimerror\tbarcodes\tRecall\tSpecificity\tPrecision\tKappa&quot;} {if(NR&gt;0){x = split(</span><span class="ch">$$</span><span class="st">1,a,&quot;_&quot;);printf &quot;%s\t%f\t%f\t%f\t%f\t%f\t%f\n&quot; ,  a[1],a[2],a[3],</span><span class="ch">$$</span><span class="st">2,</span><span class="ch">$$</span><span class="st">3,</span><span class="ch">$$</span><span class="st">4,</span><span class="ch">$$</span><span class="st">5 }}&#39;</span> &gt; 5barread3_6nt_4r.tsv
+
+<span class="dv">barread_results.txt:</span><span class="dt"> all_arch.txt</span>
+    ./barread.sh -b ../../dev/EDITTAG_4nt_ed_2.txt -r
+    ./barread.sh -b ../../dev/EDITTAG_6nt_ed_3.txt -r
+    
+<span class="dv">5barread3_results.txt:</span><span class="dt"> all_arch.txt</span>
+    ./5barread3.sh -b ../../dev/EDITTAG_4nt_ed_2.txt -r
+    ./5barread3.sh -b ../../dev/EDITTAG_6nt_ed_3.txt -r
+
+<span class="dv">all_arch.txt:</span><span class="dt"> </span>
+    ./barread.sh -b ../../dev/EDITTAG_4nt_ed_2.txt
+    ./barread.sh -b ../../dev/EDITTAG_6nt_ed_3.txt
+    ./5barread3.sh -b ../../dev/EDITTAG_4nt_ed_2.txt
+    ./5barread3.sh -b ../../dev/EDITTAG_6nt_ed_3.txt
+    cat  *tagdust_arch.txt  | sort | uniq  &gt; all_arch.txt
+    
+<span class="dv">all:</span><span class="dt"> message</span>
+
+<span class="dv">message:</span>
+    <span class="ch">@</span><span class="fu">echo To reproduce the figures run </span><span class="st">&quot;make -f run.mk benchmark&quot;</span></code></pre></td></tr></table>
+<h3 id="file-barread.sh">File: barread.sh</h3>
+<p>Runs a benchmark consiting of simulating sequences with a barcode followed by the reads. There are two options:</p>
+<p><strong>-b</strong> - should point to a file generated by <em>design_edit_metric_tags.py</em></p>
+<p><strong>-r</strong> - toggle to run the benchmark. If not used, simreads will simulate reads and write TagDust architecture files but will not run the actual benchmark.</p>
+<table class="sourceCode bash numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash"><span class="co">#!/bin/bash</span>
+
+<span class="kw">echo</span> <span class="st">&quot;Running tagdust benchmarks:&quot;</span><span class="kw">;</span>
+
+<span class="ot">barcodes=</span>
+<span class="ot">run=</span>0
+
+<span class="kw">function</span><span class="fu"> usage()</span>
+<span class="kw">{</span>
+<span class="kw">cat</span> &lt;&lt;EOF
+usage: <span class="ot">$0</span> -b  &lt;barcode file&gt; -r
+EOF
+exit 1;
+}
+
+while getopts b:r opt
+do
+case <span class="ot">${opt}</span> in
+b) barcodes=<span class="ot">${OPTARG}</span>;;
+r) run=1;;
+*) usage;;
+esac
+done
+
+if [ &quot;<span class="ot">${barcodes}</span>&quot; = &quot;&quot; ]; then usage; fi</code></pre></td></tr></table>
+<p>Below are the ranges of error rates and number of barcodes used:</p>
+<table class="sourceCode bash numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash"><span class="ot">array=(</span>0.01 0.015 0.02 0.025 0.03<span class="ot">)</span>
+<span class="ot">len=${#array[*]}</span>
+
+<span class="ot">numbar=(</span>8 24 48<span class="ot">)</span>
+<span class="ot">lenbar=${#numbar[*]}</span></code></pre></td></tr></table>
+<p>If the benchmark should be run remove all temporary files left over from a previous run:</p>
+<table class="sourceCode bash numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash"><span class="kw">if [[</span> <span class="ot">$run</span> <span class="ot">-eq</span> 1<span class="kw"> ]]</span>; <span class="kw">then</span>
+<span class="kw">make</span> --silent clean
+<span class="kw">fi</span>
+
+<span class="kw">for</span> <span class="kw">((</span> c=0; c &lt; <span class="ot">$lenbar</span>; c+=1 <span class="kw">))</span>; <span class="kw">do</span>
+<span class="ot">j=</span>0
+
+<span class="kw">while [</span> <span class="ot">$j</span> <span class="ot">-lt</span> <span class="ot">$len</span><span class="kw"> ]</span>
+<span class="kw">do</span>
+<span class="ot">name=</span><span class="st">&quot;barread</span><span class="ot">${array[$j]}</span><span class="st">_</span><span class="ot">${numbar[$c]}</span><span class="st">.fq&quot;</span>
+
+<span class="co">## Simulation without linkers: </span>
+
+<span class="ot">status=$?</span>
+<span class="kw">if [[</span> <span class="ot">$status</span> <span class="ot">-eq</span> 0<span class="kw"> ]]</span>; <span class="kw">then</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  sim SUCCESS<span class="kw">;</span>
+<span class="kw">else</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  sim FAILED<span class="kw">;</span>
+<span class="kw">printf</span> <span class="st">&quot;with ERROR </span><span class="ot">$status</span><span class="st"> and Message:\n\n</span><span class="ot">$error</span><span class="st">\n\n&quot;</span><span class="kw">;</span>
+<span class="kw">exit</span> 1<span class="kw">;</span>
+<span class="kw">fi</span>
+
+<span class="kw">if [[</span> <span class="ot">$run</span> <span class="ot">-eq</span> 1<span class="kw"> ]]</span>; <span class="kw">then</span>
+
+<span class="ot">suffix=</span><span class="st">&quot;_tagdust_arch.txt&quot;</span>
+<span class="ot">arch=$name$suffix</span>
+<span class="ot">suffix=</span><span class="st">&quot;_tagdust&quot;</span>;
+<span class="ot">outfile=$name$suffix</span>
+
+<span class="co">## Basic command</span>
+
+<span class="ot">status=$?</span>
+<span class="kw">if [[</span> <span class="ot">$status</span> <span class="ot">-eq</span> 0<span class="kw"> ]]</span>; <span class="kw">then</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  tagdust SUCCESS<span class="kw">;</span>
+<span class="kw">else</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  tagdust FAILED<span class="kw">;</span>
+<span class="kw">printf</span> <span class="st">&quot;with ERROR </span><span class="ot">$status</span><span class="st"> and Message:\n\n</span><span class="ot">$error</span><span class="st">\n\n&quot;</span><span class="kw">;</span>
+<span class="kw">exit</span> 1<span class="kw">;</span>
+<span class="kw">fi</span>
+
+<span class="ot">suffix=</span><span class="st">&quot;_tagdustarchsel&quot;</span>;
+<span class="ot">outfile=$name$suffix</span>
+
+<span class="co">## Auto-detect architecture</span>
+<span class="ot">status=$?</span>
+<span class="kw">if [[</span> <span class="ot">$status</span> <span class="ot">-eq</span> 0<span class="kw"> ]]</span>; <span class="kw">then</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  tagdust SUCCESS<span class="kw">;</span>
+<span class="kw">else</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  tagdust FAILED<span class="kw">;</span>
+<span class="kw">printf</span> <span class="st">&quot;with ERROR </span><span class="ot">$status</span><span class="st"> and Message:\n\n</span><span class="ot">$error</span><span class="st">\n\n&quot;</span><span class="kw">;</span>
+<span class="kw">exit</span> 1<span class="kw">;</span>
+<span class="kw">fi</span>
+
+<span class="ot">suffix=</span><span class="st">&quot;_fastxbarcodefile.txt&quot;</span>
+<span class="ot">arch=$name$suffix</span>
+<span class="ot">suffix=</span><span class="st">&quot;_fastx&quot;</span>;
+<span class="ot">outfile=$name$suffix</span>
+
+<span class="co">## fastx_barcode_splitter.pl</span>
+<span class="ot">status=$?</span>
+<span class="kw">if [[</span> <span class="ot">$status</span> <span class="ot">-eq</span> 0<span class="kw"> ]]</span>; <span class="kw">then</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  fastx_split SUCCESS<span class="kw">;</span>
+<span class="kw">else</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  fastx_split FAILED<span class="kw">;</span>
+<span class="kw">printf</span> <span class="st">&quot;with ERROR </span><span class="ot">$status</span><span class="st"> and Message:\n\n</span><span class="ot">$error</span><span class="st">\n\n&quot;</span><span class="kw">;</span>
+<span class="kw">exit</span> 1<span class="kw">;</span>
+<span class="kw">fi</span>
+
+<span class="ot">suffix=</span><span class="st">&quot;_tagdust_BC_&quot;</span>;
+<span class="ot">outfile=$name$suffix</span>
+
+<span class="ot">error=$(</span> <span class="kw">../../src/evalres</span> -name tagdust_<span class="ot">${array[$j]}</span>_<span class="ot">${numbar[$c]}</span>_<span class="ot">$barcodes</span>  <span class="ot">$outfile</span>*.fq -o barread  -sim_random_frac 0.1 -sim_numseq 100000 <span class="kw">2&gt;&amp;1</span><span class="ot">)</span>
+<span class="ot">status=$?</span>
+<span class="kw">if [[</span> <span class="ot">$status</span> <span class="ot">-eq</span> 0<span class="kw"> ]]</span>; <span class="kw">then</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  eval_run SUCCESS<span class="kw">;</span>
+<span class="kw">else</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  eval_run FAILED<span class="kw">;</span>
+<span class="kw">printf</span> <span class="st">&quot;with ERROR </span><span class="ot">$status</span><span class="st"> and Message:\n\n</span><span class="ot">$error</span><span class="st">\n\n&quot;</span><span class="kw">;</span>
+<span class="kw">exit</span> 1<span class="kw">;</span>
+<span class="kw">fi</span>
+
+<span class="ot">suffix=</span><span class="st">&quot;_tagdustarchsel_BC_&quot;</span>;
+<span class="ot">outfile=$name$suffix</span>
+
+<span class="ot">error=$(</span> <span class="kw">../../src/evalres</span> -name tagdustallarch_<span class="ot">${array[$j]}</span>_<span class="ot">${numbar[$c]}</span>_<span class="ot">$barcodes</span>  <span class="ot">$outfile</span>*.fq -o barread  -sim_random_frac 0.1 -sim_numseq 100000 <span class="kw">2&gt;&amp;1</span><span class="ot">)</span>
+<span class="ot">status=$?</span>
+<span class="kw">if [[</span> <span class="ot">$status</span> <span class="ot">-eq</span> 0<span class="kw"> ]]</span>; <span class="kw">then</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  eval_run SUCCESS<span class="kw">;</span>
+<span class="kw">else</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  eval_run FAILED<span class="kw">;</span>
+<span class="kw">printf</span> <span class="st">&quot;with ERROR </span><span class="ot">$status</span><span class="st"> and Message:\n\n</span><span class="ot">$error</span><span class="st">\n\n&quot;</span><span class="kw">;</span>
+<span class="kw">exit</span> 1<span class="kw">;</span>
+<span class="kw">fi</span>
+
+<span class="ot">suffix=</span><span class="st">&quot;_fastxBC&quot;</span>;
+<span class="ot">outfile=$name$suffix</span>
+
+<span class="ot">error=$(</span> <span class="kw">../../src/evalres</span> -name fastx_<span class="ot">${array[$j]}</span>_<span class="ot">${numbar[$c]}</span>_<span class="ot">$barcodes</span> <span class="ot">$outfile</span>* -o barread  -sim_random_frac 0.1 -sim_numseq 100000 <span class="kw">2&gt;&amp;1</span><span class="ot">)</span>
+<span class="ot">status=$?</span>
+<span class="kw">if [[</span> <span class="ot">$status</span> <span class="ot">-eq</span> 0<span class="kw"> ]]</span>; <span class="kw">then</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  eval_run SUCCESS<span class="kw">;</span>
+<span class="kw">else</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  eval_run FAILED<span class="kw">;</span>
+<span class="kw">printf</span> <span class="st">&quot;with ERROR </span><span class="ot">$status</span><span class="st"> and Message:\n\n</span><span class="ot">$error</span><span class="st">\n\n&quot;</span><span class="kw">;</span>
+<span class="kw">exit</span> 1<span class="kw">;</span>
+<span class="kw">fi</span>
+<span class="kw">fi</span>
+
+<span class="kw">let</span> j++
+<span class="kw">let</span> myrun++
+<span class="kw">done</span>
+
+<span class="kw">done</span>
+
+<span class="kw">if [[</span> <span class="ot">$run</span> <span class="ot">-eq</span> 1<span class="kw"> ]]</span>; <span class="kw">then</span>
+<span class="kw">make</span> --silent clean
+<span class="kw">fi</span></code></pre></td></tr></table>
+<h3 id="file-5barread3.sh">File: 5barread3.sh</h3>
+<table class="sourceCode bash numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash"><span class="co">#!/bin/bash</span>
+
+<span class="kw">echo</span> <span class="st">&quot;Running tagdust benchmarks:&quot;</span><span class="kw">;</span>
+
+<span class="ot">barcodes=</span>
+<span class="ot">run=</span>0
+
+<span class="kw">function</span><span class="fu"> usage()</span>
+<span class="kw">{</span>
+<span class="kw">cat</span> &lt;&lt;EOF
+usage: <span class="ot">$0</span> -b  &lt;barcode file&gt; -r
+EOF
+exit 1;
+}
+
+while getopts b:r opt
+do
+case <span class="ot">${opt}</span> in
+b) barcodes=<span class="ot">${OPTARG}</span>;;
+r) run=1;;
+*) usage;;
+esac
+done
+
+if [ &quot;<span class="ot">${barcodes}</span>&quot; = &quot;&quot; ]; then usage; fi</code></pre></td></tr></table>
+<p>Below are the ranges of error rates and number of barcodes used:</p>
+<table class="sourceCode bash numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash">
+<span class="ot">array=(</span>0.01 0.015 0.02 0.025 0.03<span class="ot">)</span>
+<span class="ot">len=${#array[*]}</span>
+
+<span class="ot">numbar=(</span>8 24 48<span class="ot">)</span>
+<span class="ot">lenbar=${#numbar[*]}</span>
+</code></pre></td></tr></table>
+<p>If the benchmark should be run remove all temporary files left over from a previous run:</p>
+<table class="sourceCode bash numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash">
+<span class="kw">if [[</span> <span class="ot">$run</span> <span class="ot">-eq</span> 1<span class="kw"> ]]</span>; <span class="kw">then</span>
+<span class="kw">make</span> --silent clean
+<span class="kw">fi</span>
+
+<span class="co">#barcodes=&quot;EDITTAG_4nt_ed_2.txt&quot;</span>
+
+<span class="kw">for</span> <span class="kw">((</span> c=0; c &lt; <span class="ot">$lenbar</span>; c+=1 <span class="kw">))</span>; <span class="kw">do</span>
+
+<span class="ot">j=</span>0
+
+<span class="kw">while [</span> <span class="ot">$j</span> <span class="ot">-lt</span> <span class="ot">$len</span><span class="kw"> ]</span>
+<span class="kw">do</span>
+
+<span class="ot">name=</span><span class="st">&quot;5barread3</span><span class="ot">${array[$j]}</span><span class="st">_</span><span class="ot">${numbar[$c]}</span><span class="st">.fq&quot;</span>
+
+<span class="co">## Simulation with linkers: </span>
+
+<span class="ot">status=$?</span>
+<span class="kw">if [[</span> <span class="ot">$status</span> <span class="ot">-eq</span> 0<span class="kw"> ]]</span>; <span class="kw">then</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  sim SUCCESS<span class="kw">;</span>
+<span class="kw">else</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  sim FAILED<span class="kw">;</span>
+<span class="kw">printf</span> <span class="st">&quot;with ERROR </span><span class="ot">$status</span><span class="st"> and Message:\n\n</span><span class="ot">$error</span><span class="st">\n\n&quot;</span><span class="kw">;</span>
+<span class="kw">exit</span> 1<span class="kw">;</span>
+<span class="kw">fi</span>
+
+<span class="kw">if [[</span> <span class="ot">$run</span> <span class="ot">-eq</span> 1<span class="kw"> ]]</span>; <span class="kw">then</span>
+<span class="ot">suffix=</span><span class="st">&quot;_tagdust_arch.txt&quot;</span>
+<span class="ot">arch=$name$suffix</span>
+<span class="ot">suffix=</span><span class="st">&quot;_tagdust&quot;</span>;
+<span class="ot">outfile=$name$suffix</span>
+
+<span class="co">## Basic command </span>
+<span class="ot">status=$?</span>
+<span class="kw">if [[</span> <span class="ot">$status</span> <span class="ot">-eq</span> 0<span class="kw"> ]]</span>; <span class="kw">then</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  tagdust SUCCESS<span class="kw">;</span>
+<span class="kw">else</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  tagdust FAILED<span class="kw">;</span>
+<span class="kw">printf</span> <span class="st">&quot;with ERROR </span><span class="ot">$status</span><span class="st"> and Message:\n\n</span><span class="ot">$error</span><span class="st">\n\n&quot;</span><span class="kw">;</span>
+<span class="kw">exit</span> 1<span class="kw">;</span>
+<span class="kw">fi</span>
+
+
+<span class="ot">suffix=</span><span class="st">&quot;_tagdustarchsel&quot;</span>;
+<span class="ot">outfile=$name$suffix</span>
+
+<span class="co">## Auto-detect architecture</span>
+<span class="ot">status=$?</span>
+<span class="kw">if [[</span> <span class="ot">$status</span> <span class="ot">-eq</span> 0<span class="kw"> ]]</span>; <span class="kw">then</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  tagdust SUCCESS<span class="kw">;</span>
+<span class="kw">else</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  tagdust FAILED<span class="kw">;</span>
+<span class="kw">printf</span> <span class="st">&quot;with ERROR </span><span class="ot">$status</span><span class="st"> and Message:\n\n</span><span class="ot">$error</span><span class="st">\n\n&quot;</span><span class="kw">;</span>
+<span class="kw">exit</span> 1<span class="kw">;</span>
+<span class="kw">fi</span>
+
+<span class="ot">suffix=</span><span class="st">&quot;_btrim_pattern.txt&quot;</span>
+<span class="ot">arch=$name$suffix</span>
+<span class="ot">suffix=</span><span class="st">&quot;_btrim&quot;</span>;
+<span class="ot">outfile=$name$suffix</span>
+
+<span class="co">## Btrim</span>
+<span class="ot">status=$?</span>
+<span class="kw">if [[</span> <span class="ot">$status</span> <span class="ot">-eq</span> 0<span class="kw"> ]]</span>; <span class="kw">then</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  btrim SUCCESS<span class="kw">;</span>
+<span class="kw">else</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  btrim FAILED<span class="kw">;</span>
+<span class="kw">printf</span> <span class="st">&quot;with ERROR </span><span class="ot">$status</span><span class="st"> and Message:\n\n</span><span class="ot">$error</span><span class="st">\n\n&quot;</span><span class="kw">;</span>
+<span class="kw">exit</span> 1<span class="kw">;</span>
+<span class="kw">fi</span>
+
+<span class="ot">suffix=</span><span class="st">&quot;_cutadadapt.fq&quot;</span>;
+<span class="ot">outfile=$name$suffix</span>
+
+<span class="co">## Cutadapt</span>
+<span class="ot">status=$?</span>
+<span class="kw">if [[</span> <span class="ot">$status</span> <span class="ot">-eq</span> 0<span class="kw"> ]]</span>; <span class="kw">then</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  cutadapt SUCCESS<span class="kw">;</span>
+<span class="kw">else</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  cutadapt FAILED<span class="kw">;</span>
+<span class="kw">printf</span> <span class="st">&quot;with ERROR </span><span class="ot">$status</span><span class="st"> and Message:\n\n</span><span class="ot">$error</span><span class="st">\n\n&quot;</span><span class="kw">;</span>
+<span class="kw">exit</span> 1<span class="kw">;</span>
+<span class="kw">fi</span>
+
+
+<span class="ot">suffix=</span><span class="st">&quot;_cutadadapt.fq&quot;</span>;
+<span class="ot">cutadaptout=$name$suffix</span>
+<span class="ot">suffix=</span><span class="st">&quot;_fastxbarcodefile.txt&quot;</span>
+<span class="ot">arch=$name$suffix</span>
+<span class="ot">suffix=</span><span class="st">&quot;_fastx&quot;</span>;
+<span class="ot">outfile=$name$suffix</span>
+
+<span class="co">## fastx_barcode_splitter.pl after cutadapt</span>
+
+<span class="ot">status=$?</span>
+<span class="kw">if [[</span> <span class="ot">$status</span> <span class="ot">-eq</span> 0<span class="kw"> ]]</span>; <span class="kw">then</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  fastx_split SUCCESS<span class="kw">;</span>
+<span class="kw">else</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  fastx_split FAILED<span class="kw">;</span>
+<span class="kw">printf</span> <span class="st">&quot;with ERROR </span><span class="ot">$status</span><span class="st"> and Message:\n\n</span><span class="ot">$error</span><span class="st">\n\n&quot;</span><span class="kw">;</span>
+<span class="kw">exit</span> 1<span class="kw">;</span>
+<span class="kw">fi</span>
+
+<span class="ot">suffix=</span><span class="st">&quot;_tagdust_BC_&quot;</span>;
+<span class="ot">outfile=$name$suffix</span>
+
+<span class="ot">error=$(</span> <span class="kw">../../src/evalres</span> -name tagdust_<span class="ot">${array[$j]}</span>_<span class="ot">${numbar[$c]}</span>_<span class="ot">$barcodes</span>  <span class="ot">$outfile</span>*.fq -o 5barread3  -sim_random_frac 0.1 -sim_numseq 100000 <span class="kw">2&gt;&amp;1</span><span class="ot">)</span>
+<span class="ot">status=$?</span>
+<span class="kw">if [[</span> <span class="ot">$status</span> <span class="ot">-eq</span> 0<span class="kw"> ]]</span>; <span class="kw">then</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  eval_run SUCCESS<span class="kw">;</span>
+<span class="kw">else</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  eval_run FAILED<span class="kw">;</span>
+<span class="kw">printf</span> <span class="st">&quot;with ERROR </span><span class="ot">$status</span><span class="st"> and Message:\n\n</span><span class="ot">$error</span><span class="st">\n\n&quot;</span><span class="kw">;</span>
+<span class="kw">exit</span> 1<span class="kw">;</span>
+<span class="kw">fi</span>
+
+
+<span class="ot">suffix=</span><span class="st">&quot;_tagdustarchsel_BC_&quot;</span>;
+<span class="ot">outfile=$name$suffix</span>
+
+<span class="ot">error=$(</span> <span class="kw">../../src/evalres</span> -name tagdustallarch_<span class="ot">${array[$j]}</span>_<span class="ot">${numbar[$c]}</span>_<span class="ot">$barcodes</span>  <span class="ot">$outfile</span>*.fq -o 5barread3  -sim_random_frac 0.1 -sim_numseq 100000 <span class="kw">2&gt;&amp;1</span><span class="ot">)</span>
+<span class="ot">status=$?</span>
+<span class="kw">if [[</span> <span class="ot">$status</span> <span class="ot">-eq</span> 0<span class="kw"> ]]</span>; <span class="kw">then</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  eval_run SUCCESS<span class="kw">;</span>
+<span class="kw">else</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  eval_run FAILED<span class="kw">;</span>
+<span class="kw">printf</span> <span class="st">&quot;with ERROR </span><span class="ot">$status</span><span class="st"> and Message:\n\n</span><span class="ot">$error</span><span class="st">\n\n&quot;</span><span class="kw">;</span>
+<span class="kw">exit</span> 1<span class="kw">;</span>
+<span class="kw">fi</span>
+
+<span class="ot">suffix=</span><span class="st">&quot;_btrim&quot;</span>;
+<span class="ot">outfile=$name$suffix</span>
+
+<span class="ot">error=$(</span> <span class="kw">../../src/evalres</span> -name btrim_<span class="ot">${array[$j]}</span>_<span class="ot">${numbar[$c]}</span>_<span class="ot">$barcodes</span> <span class="ot">$outfile</span>* -o 5barread3  -sim_random_frac 0.1 -sim_numseq 100000 <span class="kw">2&gt;&amp;1</span><span class="ot">)</span>
+<span class="ot">status=$?</span>
+<span class="kw">if [[</span> <span class="ot">$status</span> <span class="ot">-eq</span> 0<span class="kw"> ]]</span>; <span class="kw">then</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  eval_run SUCCESS<span class="kw">;</span>
+<span class="kw">else</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  eval_run FAILED<span class="kw">;</span>
+<span class="kw">printf</span> <span class="st">&quot;with ERROR </span><span class="ot">$status</span><span class="st"> and Message:\n\n</span><span class="ot">$error</span><span class="st">\n\n&quot;</span><span class="kw">;</span>
+<span class="kw">exit</span> 1<span class="kw">;</span>
+<span class="kw">fi</span>
+
+<span class="ot">suffix=</span><span class="st">&quot;_fastxBC&quot;</span>;
+<span class="ot">outfile=$name$suffix</span>
+
+
+<span class="ot">error=$(</span> <span class="kw">../../src/evalres</span> -name fastx_<span class="ot">${array[$j]}</span>_<span class="ot">${numbar[$c]}</span>_<span class="ot">$barcodes</span> <span class="ot">$outfile</span>* -o 5barread3  -sim_random_frac 0.1 -sim_numseq 100000 <span class="kw">2&gt;&amp;1</span><span class="ot">)</span>
+<span class="ot">status=$?</span>
+<span class="kw">if [[</span> <span class="ot">$status</span> <span class="ot">-eq</span> 0<span class="kw"> ]]</span>; <span class="kw">then</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  eval_run SUCCESS<span class="kw">;</span>
+<span class="kw">else</span>
+<span class="kw">printf</span> <span class="st">&quot;%20s%10s\n&quot;</span>  eval_run FAILED<span class="kw">;</span>
+<span class="kw">printf</span> <span class="st">&quot;with ERROR </span><span class="ot">$status</span><span class="st"> and Message:\n\n</span><span class="ot">$error</span><span class="st">\n\n&quot;</span><span class="kw">;</span>
+<span class="kw">exit</span> 1<span class="kw">;</span>
+<span class="kw">fi</span>
+
+<span class="kw">fi</span>;
+
+<span class="kw">let</span> j++
+<span class="kw">let</span> myrun++
+<span class="kw">done</span>
+
+<span class="kw">done</span>
+
+<span class="kw">if [[</span> <span class="ot">$run</span> <span class="ot">-eq</span> 1<span class="kw"> ]]</span>; <span class="kw">then</span>
+    <span class="kw">make</span> --silent clean
+<span class="kw">fi</span>
+</code></pre></td></tr></table>
+<h1 id="figure-6">Figure 6</h1>
+<p>Here we test the ability of TagDust2 to work with complicated read architectures including fingerprints. We use the following raw data files from the paper “Counting absolute numbers of molecules using unique molecular identifiers.” <a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a>:</p>
+<ul>
+<li>ERR048988.fastq.bz2</li>
+<li>ERR048990.fastq.bz2</li>
+<li>ERR048992.fastq.bz2</li>
+<li>ERR048994.fastq.bz2</li>
+<li>ERR048989.fastq.bz2</li>
+<li>ERR048991.fastq.bz2</li>
+<li>ERR048993.fastq.bz2</li>
+</ul>
+<p>To extract the reads we use the following read architecture file:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">bash-3.2</span>$ cat arch.txt
+<span class="kw">tagdust</span> -t 80 -1 F:NNN -2 S:T -3 F:NNNN -4 S:T -5 F:NNN -6 B:GACTT -7 S:GGGG -8 R:N -start 1 -end 25</code></pre>
+<p>indicating that we expect a 10 nucleotide fingerprint sequence (F:) separated by thymidines (S:) followed by a 5 nucleotide barcode (B:), 4 guanosines and finally the mappable read (R:).</p>
+<p>The commands to process the fastq files are:</p>
+<h2 id="file-process_umi_data.sh">File: process_umi_data.sh</h2>
+<table class="sourceCode bash numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash"><span class="kw">tagdust</span> -arch arch.txt -t 80 ERR048988.fastq -o 15c_repeat1_lane1_extracted
+<span class="kw">tagdust</span> -arch arch.txt -t 80 ERR048990.fastq -o 25c_repeat1_lane1_extracted
+<span class="kw">tagdust</span> -arch arch.txt -t 80 ERR048992.fastq -o RNA_corresponding_to_1000_cells_lane1_extracted
+<span class="kw">tagdust</span> -arch arch.txt -t 80 ERR048994.fastq -o RNA_corresponding_to_10_cells_lane1_extracted
+<span class="kw">tagdust</span> -arch arch.txt -t 80 ERR048989.fastq -o 15c_repeat2_lane1_extracted
+<span class="kw">tagdust</span> -arch arch.txt -t 80 ERR048991.fastq -o 25c_repeat1_lane2_extracted
+<span class="kw">tagdust</span> -arch arch.txt -t 80 ERR048993.fastq -o RNA_corresponding_to_100_cells_lane1_extracted</code></pre></td></tr></table>
+<p>Note that we rename the files to better understand which fastq file belongs to which experiment.</p>
+<p>The next step is to map the sequences using bwa<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a>:</p>
+<table class="sourceCode bash numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash">
+<span class="kw">for</span> <span class="kw">file</span> in ./*
+        <span class="kw">do</span>
+                <span class="kw">if [</span> <span class="ot">-f</span> <span class="ot">$file</span><span class="kw"> ]</span>; <span class="kw">then</span> 
+                        <span class="kw">if [[</span> <span class="ot">$file</span> =~ _extracted_BC_GACTT.fq$<span class="kw"> ]]</span>; <span class="kw">then</span>
+                                <span class="kw">if [</span> <span class="ot">-f</span> <span class="ot">$$</span>file.sorted.bam<span class="kw"> ]</span>; <span class="kw">then</span>
+                                        <span class="kw">echo</span> <span class="st">&quot;</span><span class="ot">$file</span><span class="st"> already processed&quot;</span>
+                                <span class="kw">else</span>
+                                                <span class="kw">echo</span> <span class="st">&quot;working on </span><span class="ot">$file</span><span class="st">&quot;</span>
+                                                <span class="kw">sed</span>  -e <span class="st">&#39;s/[ \t]//g&#39;</span> <span class="ot">$file</span> <span class="kw">&gt;</span> tmp.fq
+                                                 <span class="kw">bwa</span> aln -t 80  <span class="ot">$GENOME_DIR</span> tmp.fq  <span class="kw">|</span> <span class="kw">bwa</span> samse <span class="ot">$GENOME_DIR</span> - tmp.fq <span class="kw">|</span> <span class="kw">samtools</span> view -Su - <span class="kw">|</span> <span class="kw">samtools</span> sort - <span class="ot">$file</span>.sorted
+
+                                <span class="kw">fi</span>
+                        <span class="kw">fi</span>
+                <span class="kw">fi</span>
+        <span class="kw">done</span></code></pre></td></tr></table>
+<p><strong>$GENOME_DIR</strong> should point to a BWA index of the Drosophila melanogaster (BDGP5) gene sequences (downloaded from http://www.biomart.org).</p>
+<p>Now we extract reads reads mapping to same location, and sort them by fingerprint ID, chromosome and position.</p>
+<table class="sourceCode bash numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash"><span class="kw">samtools</span> view -F 16 -q 20 15c_repeat1_lane1_extracted_BC_GACTT.fq.sorted.bam <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{x = split($1,a,&quot;;&quot;); b = substr(a[2],4);print b , $3 ,$4 }&#39;</span> <span class="kw">|</span> <span class="kw">sort</span> -S 16G -k 2,2 -k 3,3n -k 1,1n <span class="kw">|</span> <span class="kw">uniq</span> -c <span class="kw">&gt;</span> 15c_repeat1_lane1_extracted_processed.csv 
+
+<span class="kw">samtools</span> view -F 16 -q 20 RNA_corresponding_to_1000_cells_lane1_extracted_BC_GACTT.fq.sorted.bam <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{x = split($1,a,&quot;;&quot;); b = substr(a[2],4);print b , $3 ,$4 }&#39;</span><span class="kw">|sort</span> -S 16G -k 2,2 -k 3,3n -k 1,1n <span class="kw">|</span> <span class="kw">uniq</span> -c <span class="kw">&gt;</span> RNA_corresponding_to_1000_cells_lane1_extracted_processed.csv
+
+ 
+<span class="kw">samtools</span> view -F 16 -q 20 15c_repeat2_lane1_extracted_BC_GACTT.fq.sorted.bam <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{x = split($1,a,&quot;;&quot;); b = substr(a[2],4);print b , $3 ,$4 }&#39;</span><span class="kw">|</span> <span class="kw">sort</span> -S 16G -k 2,2 -k 3,3n -k 1,1n <span class="kw">|</span> <span class="kw">uniq</span> -c <span class="kw">&gt;</span> 15c_repeat2_lane1_extracted_processed.csv <span class="kw">&amp;</span>
+
+<span class="kw">samtools</span> view -F 16 -q 20 RNA_corresponding_to_100_cells_lane1_extracted_BC_GACTT.fq.sorted.bam <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{x = split($1,a,&quot;;&quot;); b = substr(a[2],4);print b , $3 ,$4 }&#39;</span><span class="kw">|</span> <span class="kw">sort</span> -S 16G -k 2,2 -k 3,3n -k 1,1n <span class="kw">|</span> <span class="kw">uniq</span> -c <span class="kw">&gt;</span> RNA_corresponding_to_100_cells_lane1_extracted_processed.csv
+
+ 
+<span class="kw">samtools</span> view -F 16 -q 20 25c_repeat1_lane1_extracted_BC_GACTT.fq.sorted.bam <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{x = split($1,a,&quot;;&quot;); b = substr(a[2],4);print b , $3 ,$4 }&#39;</span>  <span class="kw">|</span> <span class="kw">sort</span> -S 16G -k 2,2 -k 3,3n -k 1,1n <span class="kw">|</span> <span class="kw">uniq</span> -c <span class="kw">&gt;</span> 25c_repeat1_lane1_extracted_processed.csv
+ 
+<span class="kw">samtools</span> view -F 16 -q 20 RNA_corresponding_to_10_cells_lane1_extracted_BC_GACTT.fq.sorted.bam <span class="kw">|</span> <span class="kw">awk</span>  <span class="st">&#39;{x = split($1,a,&quot;;&quot;); b = substr(a[2],4);print b , $3 ,$4 }&#39;</span> <span class="kw">|</span> <span class="kw">sort</span> -S 16G -k 2,2 -k 3,3n -k 1,1n <span class="kw">|</span> <span class="kw">uniq</span> -c <span class="kw">&gt;</span> RNA_corresponding_to_10_cells_lane1_extracted_processed.csv
+
+<span class="kw">samtools</span> view -F 16 -q 20 25c_repeat1_lane2_extracted_BC_GACTT.fq.sorted.bam <span class="kw">|</span> <span class="kw">awk</span>  <span class="st">&#39;{x = split($1,a,&quot;;&quot;); b = substr(a[2],4);print b , $3 ,$4 }&#39;</span>  <span class="kw">|</span> <span class="kw">sort</span> -S 16G -k 2,2 -k 3,3n -k 1,1n <span class="kw">|</span> <span class="kw">uniq</span> -c <span class="kw">&gt;</span> 25c_repeat1_lane2_extracted_processed.csv </code></pre></td></tr></table>
+<p>Next we use the groupBy tool from the bedtool package <a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a> to either:</p>
+<ul>
+<li>sum or</li>
+<li>count</li>
+</ul>
+<p>reads mapping to the same location with the same fingerprint.</p>
+<table class="sourceCode bash numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash">
+<span class="kw">cat</span> 15c_repeat1_lane1_extracted_processed.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%s\t%s\t%s\n&quot;,$1,$2,$3,$4}&#39;</span>  <span class="kw">|</span> <span class="kw">groupBy</span>  -g 3 -c 1 -o count <span class="kw">&gt;</span> 15c_repeat1_lane1_UMI.csv 
+<span class="kw">cat</span> 15c_repeat1_lane1_extracted_processed.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%s\t%s\t%s\n&quot;,$1,$2,$3,$4}&#39;</span>  <span class="kw">|</span> <span class="kw">groupBy</span>  -g 3 -c 1 -o sum <span class="kw">&gt;</span> 15c_repeat1_lane1_NOUMI.csv  
+
+<span class="kw">cat</span> 15c_repeat2_lane1_extracted_processed.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%s\t%s\t%s\n&quot;,$1,$2,$3,$4}&#39;</span>  <span class="kw">|</span> <span class="kw">groupBy</span>  -g 3 -c 1 -o count <span class="kw">&gt;</span> 15c_repeat2_lane1_UMI.csv 
+<span class="kw">cat</span> 15c_repeat2_lane1_extracted_processed.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%s\t%s\t%s\n&quot;,$1,$2,$3,$4}&#39;</span>  <span class="kw">|</span> <span class="kw">groupBy</span>  -g 3 -c 1 -o sum <span class="kw">&gt;</span> 15c_repeat2_lane1_NOUMI.csv 
+
+
+<span class="kw">cat</span> 25c_repeat1_lane1_extracted_processed.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%s\t%s\t%s\n&quot;,$1,$2,$3,$4}&#39;</span>  <span class="kw">|</span> <span class="kw">groupBy</span>  -g 3 -c 1 -o count <span class="kw">&gt;</span> 25c_repeat1_lane1_UMI.csv 
+<span class="kw">cat</span> 25c_repeat1_lane1_extracted_processed.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%s\t%s\t%s\n&quot;,$1,$2,$3,$4}&#39;</span>  <span class="kw">|</span> <span class="kw">groupBy</span>  -g 3 -c 1 -o sum <span class="kw">&gt;</span> 25c_repeat1_lane1_NOUMI.csv 
+
+<span class="kw">cat</span> 25c_repeat1_lane2_extracted_processed.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%s\t%s\t%s\n&quot;,$1,$2,$3,$4}&#39;</span>  <span class="kw">|</span> <span class="kw">groupBy</span>  -g 3 -c 1 -o count <span class="kw">&gt;</span> 25c_repeat1_lane2_UMI.csv 
+<span class="kw">cat</span> 25c_repeat1_lane2_extracted_processed.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%s\t%s\t%s\n&quot;,$1,$2,$3,$4}&#39;</span>  <span class="kw">|</span> <span class="kw">groupBy</span>  -g 3 -c 1 -o sum <span class="kw">&gt;</span> 25c_repeat1_lane2_NOUMI.csv  
+
+
+<span class="kw">cat</span> RNA_corresponding_to_1000_cells_lane1_extracted_processed.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%s\t%s\t%s\n&quot;,$1,$2,$3,$4}&#39;</span>  <span class="kw">|</span> <span class="kw">groupBy</span>  -g 3 -c 1 -o count <span class="kw">&gt;</span> RNA_corresponding_to_1000_cells_UMI.csv  
+<span class="kw">cat</span> RNA_corresponding_to_1000_cells_lane1_extracted_processed.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%s\t%s\t%s\n&quot;,$1,$2,$3,$4}&#39;</span>  <span class="kw">|</span> <span class="kw">groupBy</span>  -g 3 -c 1 -o sum <span class="kw">&gt;</span> RNA_corresponding_to_1000_cells_NOUMI.csv 
+
+<span class="kw">cat</span> RNA_corresponding_to_100_cells_lane1_extracted_processed.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%s\t%s\t%s\n&quot;,$1,$2,$3,$4}&#39;</span>  <span class="kw">|</span> <span class="kw">groupBy</span>  -g 3 -c 1 -o count <span class="kw">&gt;</span> RNA_corresponding_to_100_cells_UMI.csv 
+<span class="kw">cat</span> RNA_corresponding_to_100_cells_lane1_extracted_processed.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%s\t%s\t%s\n&quot;,$1,$2,$3,$4}&#39;</span>  <span class="kw">|</span> <span class="kw">groupBy</span>  -g 3 -c 1 -o sum <span class="kw">&gt;</span> RNA_corresponding_to_100_cells_NOUMI.csv 
+
+<span class="kw">cat</span> RNA_corresponding_to_10_cells_lane1_extracted_processed.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%s\t%s\t%s\n&quot;,$1,$2,$3,$4}&#39;</span>  <span class="kw">|</span> <span class="kw">groupBy</span>  -g 3 -c 1 -o count <span class="kw">&gt;</span> RNA_corresponding_to_10_cells_UMI.csv 
+<span class="kw">cat</span> RNA_corresponding_to_10_cells_lane1_extracted_processed.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%s\t%s\t%s\n&quot;,$1,$2,$3,$4}&#39;</span>  <span class="kw">|</span> <span class="kw">groupBy</span>  -g 3 -c 1 -o sum <span class="kw">&gt;</span> RNA_corresponding_to_10_cells_NOUMI.csv </code></pre></td></tr></table>
+<p>Here we combine the results from replicas.</p>
+<table class="sourceCode bash numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash">
+<span class="kw">cat</span> 15c_repeat1_lane1_NOUMI.csv 15c_repeat2_lane1_NOUMI.csv <span class="kw">|</span> <span class="kw">sort</span> -k 1,1  <span class="kw">|</span> <span class="kw">groupBy</span>  -g 1 -c 2 -o sum <span class="kw">&gt;</span> 15c_combined_noumi.csv 
+<span class="kw">cat</span> 15c_repeat1_lane1_UMI.csv  15c_repeat2_lane1_UMI.csv  <span class="kw">|</span> <span class="kw">sort</span> -k 1,1  <span class="kw">|</span> <span class="kw">groupBy</span>  -g 1 -c 2 -o sum <span class="kw">&gt;</span> 15c_combined_UMI.csv 
+
+<span class="kw">cat</span> 25c_repeat1_lane1_NOUMI.csv  25c_repeat1_lane2_NOUMI.csv <span class="kw">|</span> <span class="kw">sort</span> -k 1,1  <span class="kw">|</span>  <span class="kw">groupBy</span>  -g 1 -c 2 -o sum <span class="kw">&gt;</span> 25c_combined_noumi.csv 
+<span class="kw">cat</span> 25c_repeat1_lane1_UMI.csv   25c_repeat1_lane2_UMI.csv <span class="kw">|</span> <span class="kw">sort</span> -k 1,1  <span class="kw">|</span>  <span class="kw">groupBy</span>  -g 1 -c 2 -o sum <span class="kw">&gt;</span> 25c_combined_UMI.csv</code></pre></td></tr></table>
+<p>We now join the processed files either using UMIs or not for easy plotting with R:</p>
+<table class="sourceCode bash numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+</pre></td><td class="sourceCode"><pre><code class="sourceCode bash">
+<span class="kw">join</span> -a1 -a2 -1 1 -2 1 -o 0 1.2 2.2 -e <span class="st">&quot;0&quot;</span> 15c_repeat1_lane1_UMI.csv  15c_repeat2_lane1_UMI.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%d\t%d\n&quot;,$1,$2,$3 }&#39;</span> <span class="kw">&gt;</span> comp_15c_umi.csv
+
+<span class="kw">join</span> -a1 -a2 -1 1 -2 1 -o 0 1.2 2.2 -e <span class="st">&quot;0&quot;</span> 25c_repeat1_lane1_NOUMI.csv  25c_repeat1_lane2_NOUMI.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%d\t%d\n&quot;,$1,$2,$3 }&#39;</span> <span class="kw">&gt;</span> comp_25c_noumi.csv
+
+<span class="kw">join</span> -a1 -a2 -1 1 -2 1 -o 0 1.2 2.2 -e <span class="st">&quot;0&quot;</span> 25c_repeat1_lane1_UMI.csv  25c_repeat1_lane2_UMI.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%d\t%d\n&quot;,$1,$2,$3 }&#39;</span> <span class="kw">&gt;</span> comp_25c_umi.csv
+
+<span class="kw">join</span> -a1 -a2 -1 1 -2 1 -o 0 1.2 2.2 -e <span class="st">&quot;0&quot;</span> 15c_repeat1_lane1_NOUMI.csv  25c_repeat1_lane1_NOUMI.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%d\t%d\n&quot;,$1,$2,$3 }&#39;</span> <span class="kw">&gt;</span> comp_15c_repeat1_25c_repeat1_noumi.csv
+
+<span class="kw">join</span> -a1 -a2 -1 1 -2 1 -o 0 1.2 2.2 -e <span class="st">&quot;0&quot;</span> 15c_repeat1_lane1_UMI.csv  25c_repeat1_lane1_UMI.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%d\t%d\n&quot;,$1,$2,$3 }&#39;</span> <span class="kw">&gt;</span> comp_15c_repeat1_25c_repeat1_umi.csv
+
+<span class="kw">join</span> -a1 -a2 -1 1 -2 1 -o 0 1.2 2.2 -e <span class="st">&quot;0&quot;</span> 15c_repeat2_lane1_NOUMI.csv  25c_repeat1_lane2_NOUMI.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%d\t%d\n&quot;,$1,$2,$3 }&#39;</span> <span class="kw">&gt;</span> comp_15c_repeat2_25c_repeat1_lane2_noumi.csv
+
+<span class="kw">join</span> -a1 -a2 -1 1 -2 1 -o 0 1.2 2.2 -e <span class="st">&quot;0&quot;</span> 15c_repeat2_lane1_UMI.csv  25c_repeat1_lane2_UMI.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%d\t%d\n&quot;,$1,$2,$3 }&#39;</span> <span class="kw">&gt;</span> comp_15c_repeat2_25c_repeat1_lane2_umi.csv
+
+<span class="kw">join</span> -a1 -a2 -1 1 -2 1 -o 0 1.2 2.2 -e <span class="st">&quot;0&quot;</span> 15c_repeat1_lane1_NOUMI.csv  25c_repeat1_lane2_NOUMI.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%d\t%d\n&quot;,$1,$2,$3 }&#39;</span> <span class="kw">&gt;</span> comp_15c_repeat1_25c_repeat1_lane2_noumi.csv
+
+<span class="kw">join</span> -a1 -a2 -1 1 -2 1 -o 0 1.2 2.2 -e <span class="st">&quot;0&quot;</span> 15c_repeat1_lane1_UMI.csv  25c_repeat1_lane2_UMI.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%d\t%d\n&quot;,$1,$2,$3 }&#39;</span> <span class="kw">&gt;</span> comp_15c_repeat1_25c_repeat1_lane2_umi.csv
+
+<span class="kw">join</span> -a1 -a2 -1 1 -2 1 -o 0 1.2 2.2 -e <span class="st">&quot;0&quot;</span> 15c_repeat2_lane1_NOUMI.csv  25c_repeat1_lane1_NOUMI.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%d\t%d\n&quot;,$1,$2,$3 }&#39;</span> <span class="kw">&gt;</span> comp_15c_repeat2_25c_repeat1_lane1_noumi.csv
+
+<span class="kw">join</span> -a1 -a2 -1 1 -2 1 -o 0 1.2 2.2 -e <span class="st">&quot;0&quot;</span> 15c_repeat2_lane1_UMI.csv  25c_repeat1_lane1_UMI.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%d\t%d\n&quot;,$1,$2,$3 }&#39;</span> <span class="kw">&gt;</span> comp_15c_repeat2_25c_repeat1_lane1_umi.csv
+
+<span class="kw">join</span> -a1 -a2 -1 1 -2 1 -o 0 1.2 2.2 -e <span class="st">&quot;0&quot;</span>  15c_combined_noumi.csv 25c_combined_noumi.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%d\t%d\n&quot;,$1,$2,$3 }&#39;</span> <span class="kw">&gt;</span> 15_25_combined_noumi.csv
+<span class="kw">join</span> -a1 -a2 -1 1 -2 1 -o 0 1.2 2.2 -e <span class="st">&quot;0&quot;</span>  15c_combined_UMI.csv 25c_combined_UMI.csv <span class="kw">|</span> <span class="kw">awk</span> <span class="st">&#39;{printf &quot;%s\t%d\t%d\n&quot;,$1,$2,$3 }&#39;</span> <span class="kw">&gt;</span> 15_25_combined_UMI.csv</code></pre></td></tr></table>
+<h2 id="file-make_umi_plots.r">File: make_umi_plots.R</h2>
+<p>Here are the commands used to generate panel one and two of Figure 6:</p>
+<pre class="sourceCode R"><code class="sourceCode r"><span class="kw">library</span>(ggplot2)
+
+mat =<span class="st"> </span><span class="kw">read.table</span>(<span class="st">&quot;15_25_combined_noumi.csv&quot;</span>,<span class="dt">header =</span> F);
+cor =<span class="st"> </span><span class="kw">cor</span>(mat[,<span class="dv">2</span>],mat[,<span class="dv">3</span>]);
+frame=<span class="kw">ggplot</span>(mat,<span class="kw">aes</span>(mat[,<span class="dv">2</span>],mat[,<span class="dv">3</span>]))
+frame +<span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">colour=</span><span class="st">&quot;black&quot;</span>,<span class="dt">size=</span><span class="dv">1</span>,<span class="dt">shape=</span><span class="dv">20</span>,<span class="dt">alpha=</span><span class="fl">0.3</span>) +<span class="st"> </span><span class="kw">labs</span>(<span class="dt">x=</span><span class="st">&quot;15 cycles &quot;</span>,<span class="dt">y=</span><span class="st">&quot;25 cycles&quot;</span>,<span class="dt">title=</span><span class="st">&quot;without UMI&quot;</span>) +<span class="st"> </span><span class="kw">annotate</span>(<span class="st">&quot;text&quot;</span>, <span class="dt">label =</span><span class="kw">paste</span>(<span class="st">&quot;R=&quot;</span>, <span class="kw">round</span> (cor,<span class="dv">6</span>), <span class="dt">sep=</span><span class="st">&quot;&quot;</span>), <span class="dt">x =</span> <span class="kw">min</span>(mat[,<span class="dv">2</span>])+<span class="dv">10</span>, <span class="dt">y =</span> <span class="kw">max</span>(mat[,<span class="dv">3</span>]) /<span class="st"> </span><span class="dv">10</span>, <span class="dt">size =</span> <span class="dv">6</span>, <span class="dt">colour =</span> <span class="st">&quot;red&quot;</span>) +<span class="kw">scale_x_log10</span>() +<span class="st"> </span><span class="kw">scale_y_log10</span>()+<span class="kw">theme</span>(<span class="dt">axis.text=</span><span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">12</span>), <span class="dt">axis.title=</span><span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">14</span>,<span class="dt">face=</span><span class="st">&quot;bold&quot;</span>),<span class="dt">title=</span><span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">18</span>,<span class="dt">face=</span><span class="st">&quot;bold&quot;</span>));
+<span class="kw">ggsave</span>(<span class="st">&quot;15_25_combined_noumi.pdf&quot;</span>)
+mat =<span class="st"> </span><span class="kw">read.table</span>(<span class="st">&quot;15_25_combined_UMI.csv&quot;</span>,<span class="dt">header =</span> F);
+
+cor =<span class="st"> </span><span class="kw">cor</span>(mat[,<span class="dv">2</span>],mat[,<span class="dv">3</span>]);
+frame=<span class="kw">ggplot</span>(mat,<span class="kw">aes</span>(mat[,<span class="dv">2</span>],mat[,<span class="dv">3</span>]))
+frame +<span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">colour=</span><span class="st">&quot;black&quot;</span>,<span class="dt">size=</span><span class="dv">1</span>,<span class="dt">shape=</span><span class="dv">20</span>,<span class="dt">alpha=</span><span class="fl">0.3</span>) +<span class="st"> </span><span class="kw">labs</span>(<span class="dt">x=</span><span class="st">&quot;15 cycles&quot;</span>,<span class="dt">y=</span><span class="st">&quot;25 cycles&quot;</span>,<span class="dt">title=</span><span class="st">&quot;with UMI&quot;</span>) +<span class="st"> </span><span class="kw">annotate</span>(<span class="st">&quot;text&quot;</span>, <span class="dt">label =</span><span class="kw">paste</span>(<span class="st">&quot;R=&quot;</span>, <span class="kw">round</span> (cor,<span class="dv">6</span>), <span class="dt">sep=</span><span class="st">&quot;&quot;</span>), <span class="dt">x =</span> <span class="kw">min</span>(mat[,<span class="dv">2</span>])+<span class="dv">10</span>, <span class="dt">y =</span> <span class="kw">max</span>(mat[,<span class="dv">3</span>]) /<span class="st"> </span><span class="dv">10</span>, <span class="dt">size =</span> <span class="dv">6</span>, <span class="dt">colour =</span> <span class="st">&quot;red&quot;</span>) +<span class="kw">scale_x_log10</span>() +<span class="st"> </span><span class="kw">scale_y_log10</span>()+<span class="kw">theme</span>(<span class="dt">axis.text=</span><span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">12</span>), <span class="dt">axis.title=</span><span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">14</span>,<span class="dt">face=</span><span class="st">&quot;bold&quot;</span>),<span class="dt">title=</span><span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">18</span>,<span class="dt">face=</span><span class="st">&quot;bold&quot;</span>));
+<span class="kw">ggsave</span>(<span class="st">&quot;15_25_combined_UMI.pdf&quot;</span>)</code></pre>
+<h1 id="table-1-comparison-to-illuminas-bcl2fastq.">Table 1: Comparison to Illumina’s bcl2fastq.</h1>
+<p>To run this benchmark some understanding on how to toggle the de-multiplexing options in the CASAVA pipeline are required. A great tutorial on this was written by Brant Faircloth<a href="#fn6" class="footnoteRef" id="fnref6"><sup>6</sup></a>.</p>
+<p>It is necessary to install the bcl2fastq package<a href="#fn7" class="footnoteRef" id="fnref7"><sup>7</sup></a> (bcl2fastq-1.8.4.tar.gz) and follow these steps:</p>
+<h2 id="run-the-default-pipeline-on-the-validation-data-containing-barcodes">Run the default pipeline on the validation data containing barcodes:</h2>
+<ol type="1">
+<li>modify:</li>
+</ol>
+<p>By default only one PhiX sample and one human sample are used for the validation. Modify:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">./share/bcl2fastq-1.8.4/examples/Validation/110120_P20_0993_A805CKABXX/Data/Intensities/BaseCalls/SampleSheet.csv</span></code></pre>
+<p><strong>NOTE:</strong> there are two validation datasets included but only 110120_P20_0993_A805CKABXX contains multiplexed samples.</p>
+<p>so that all samples of lane 1 are de-multiplexed.</p>
+<ol start="2" type="1">
+<li>run:</li>
+</ol>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">bash-3.2</span>$ configureValidation.pl \
+         <span class="kw">--source-dir</span> ../share/bcl2fastq-1.8.4/examples/Validation/110120_P20_0993_A805CKABXX \
+         <span class="kw">--output-dir</span> ./ValidationMultiplexed_casava</code></pre>
+<ol start="3" type="1">
+<li>run base-caller with <em>default</em> de-multiplexing:</li>
+</ol>
+<pre class="sourceCode bash"><code class="sourceCode bash">
+<span class="kw">bash-3.2</span>$ cd ValidationMultiplexed_casava
+<span class="kw">bash-3.2</span>$ make</code></pre>
+<p>At this point we should have the CASAVA de-multiplexed fastq files.</p>
+<h2 id="run-the-pipeline-without-de-multiplecing-and-use-tagdust2.">Run the pipeline without de-multiplecing and use TagDust2.</h2>
+<ol type="1">
+<li>modify configuration makefile:</li>
+</ol>
+<p>share/bcl2fastq-1.8.4/examples/Validation/110120_P20_0993_A805CKABXX/Unaligned/ValidationConfig.mk</p>
+<p>from:</p>
+<pre class="sourceCode makefile"><code class="sourceCode makefile"><span class="dt">CONFIGURE_BCL_TO_FASTQ_PARAMS </span><span class="ch">:=</span><span class="st"> --use-bases-mask &#39;y76n*,I6n,y76n*&#39;</span></code></pre>
+<p>to:</p>
+<pre class="sourceCode makefile"><code class="sourceCode makefile"><span class="dt">CONFIGURE_BCL_TO_FASTQ_PARAMS </span><span class="ch">:=</span><span class="st"> --use-bases-mask &#39;y76n*,Y6n,y76n*&#39;</span></code></pre>
+<p>I.e. read two corresponding to the 6 nucleotide index is basecalled and written to a seperate file alongside the actual paired-end reads.</p>
+<ol start="2" type="1">
+<li>modify sample sheet:</li>
+</ol>
+<p>/share/bcl2fastq-1.8.4/examples/Validation/110120_P20_0993_A805CKABXX/Data/Intensities/BaseCalls/SampleSheet.csv</p>
+<p>to:</p>
+<pre><code>FCID,Lane,SampleID,SampleRef,Index,Description,Control,Recipe,Operator
+A805CKABXX,1,not_demultiplexed,,,Test bcl conversion,N,D109LACXX,BCF,testbclconv
+#A805CKABXX,1,AR005,human,ACAGTG,Cypress,Y,101+7,CB,Demo
+#A805CKABXX,1,AR008,human,ACTTGA,Cypress,Y,101+7,CB,Demo
+#A805CKABXX,1,PhiX,phix,TTAGGC,Cypress,Y,101+7,CB,Demo
+#A805CKABXX,1,,unknown,Undetermined,Ignored clusters with unmatched barcodes for lane 1,N,101+7,CB,
+</code></pre>
+<p><strong>Note</strong> that only lane 1 is included in the test.</p>
+<ol start="3" type="1">
+<li>run the pipeline again</li>
+</ol>
+<pre><code>bash-3.2$ configureValidation.pl \
+         --source-dir ../share/bcl2fastq-1.8.4/examples/Validation/110120_P20_0993_A805CKABXX \
+         --output-dir ./ValidationMultiplexed_casava
+</code></pre>
+<p>Now we have should have these three fastq files:</p>
+<pre><code>not_demultiplexed_NoIndex_L001_R1_001.fastq.gz
+not_demultiplexed_NoIndex_L001_R2_001.fastq.gz 
+not_demultiplexed_NoIndex_L001_R3_001.fastq.gz
+</code></pre>
+<h2 id="run-tagdust2">Run TagDust2</h2>
+<p>Here is the TagDust2 command:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">
+<span class="kw">bash-3.2</span>$ tagdust -arch casava_arch.txt not_demultiplexed_NoIndex_L001_R1_001.fastq.gz not_demultiplexed_NoIndex_L001_R2_001.fastq.gz  not_demultiplexed_NoIndex_L001_R3_001.fastq.gz  -t 80 -o demulti_large</code></pre>
+<p>Here are the contents of the architecture file casava_arch.txt:</p>
+<pre><code>tagdust -1 B:ACAGTG,ACTTGA,TTAGGC
+tagdust -1 R:N
+</code></pre>
+<p>The first line corresponds to the architecture we wish to use on read number two containing the indices. The second line corresponds to <em>blank</em> architecture which results in the whole read to be extracted by TagDust2.</p>
+<p>TagDust2 will:</p>
+<ol type="1">
+<li>scan each input file seperately with both architectures</li>
+<li>determine that file:
+<ul>
+<li>one is a read ( R:N)</li>
+<li>two is contains indices (B:ACAGTG,ACTTGA,TTAGGC)</li>
+<li>three is another read (R:N)</li>
+</ul></li>
+<li>scan all reads with the <em>correct</em> architectures</li>
+<li>extract reads in which the index could be unambigiously identified.</li>
+</ol>
+<h2 id="comparison">Comparison</h2>
+<p>To count the number of extracted reads (CASAVA):</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">
+<span class="kw">bash-3.2</span>$ zcat  Sample_AR005/AR005_ACAGTG_L001_R1_001.fastq.gz <span class="kw">|</span> <span class="kw">wc</span> -l
+<span class="kw">5890936</span>
+
+<span class="kw">bash-3.2</span>$ zcat  Sample_AR008/AR008_ACTTGA_L001_R1_001.fastq.gz  <span class="kw">|</span> <span class="kw">wc</span> -l
+<span class="kw">6072832</span>
+
+<span class="kw">bash-3.2</span>$ zcat Sample_PhiX/PhiX_TTAGGC_L001_R1_001.fastq.gz  <span class="kw">|</span> <span class="kw">wc</span> -l
+<span class="kw">196416</span></code></pre>
+<p>and the number of reads extracted by TagDust2:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">bash-3.2</span>$ wc  -l demulti_large_*READ1.fq
+<span class="kw">6035392</span> demulti_large_BC_ACAGTG_READ1.fq
+<span class="kw">6175672</span> demulti_large_BC_ACTTGA_READ1.fq
+<span class="kw">205952</span> demulti_large_BC_TTAGGC_READ1.fq</code></pre>
+<p><strong>NOTE:</strong> the numbers above must be divided by 4 because each sequence corresponds to 4 lines in a fastq file.</p>
+<p>To get an idea whether the reads additionally extracted by TagDust2 are of poor quality or not I aligned all reads to the human genome (hg38) / PhiX genome (NC 001422.1) using BWA-MEM<a href="#fn8" class="footnoteRef" id="fnref8"><sup>8</sup></a>:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">
+<span class="kw">bash-3.2</span>$ nice bwa  mem -t 16  /GROUP/REFERENCE/GRCh38/GRCh38.genome.fa demulti_large_BC_ACAGTG_READ1.fq demulti_large_BC_ACAGTG_READ2.fq   <span class="kw">|</span> <span class="kw">samtools</span> view -Sb - <span class="kw">&gt;</span> tagdust_ACAGTG.bam
+
+<span class="kw">bash-3.2</span>$ nice bwa  mem -t 16  /GROUP/REFERENCE/GRCh38/GRCh38.genome.fa demulti_large_BC_ACTTGA_READ1.fq demulti_large_BC_ACTTGA_READ2.fq   <span class="kw">|</span> <span class="kw">samtools</span> view -Sb - <span class="kw">&gt;</span> tagdust_ACTTGA.bam
+
+<span class="kw">bash-3.2</span>$ nice bwa  mem -t 16 phix.fa demulti_large_BC_TTAGGC_READ1.fq demulti_large_BC_TTAGGC_READ2.fq   <span class="kw">|</span> <span class="kw">samtools</span> view -Sb - <span class="kw">&gt;</span> tagdust_TTAGGC.bam
+
+<span class="kw">bash-3.2</span>$ nice bwa  mem -t 16  /GROUP/REFERENCE/GRCh38/GRCh38.genome.fa Sample_AR005/AR005_ACAGTG_L001_R1_001.fastq.gz Sample_AR005/AR005_ACAGTG_L001_R2_001.fastq.gz <span class="kw">|</span> <span class="kw">samtools</span> view -Sb - <span class="kw">&gt;</span> casava_ACAGTG.bam
+
+<span class="kw">bash-3.2</span>$ nice bwa  mem -t 16  /GROUP/REFERENCE/GRCh38/GRCh38.genome.fa Sample_AR008/AR008_ACTTGA_L001_R1_001.fastq.gz Sample_AR008/AR008_ACTTGA_L001_R2_001.fastq.gz <span class="kw">|</span> <span class="kw">samtools</span> view -Sb - <span class="kw">&gt;</span> casava_ACTTGA.bam
+
+<span class="kw">bash-3.2</span>$ nice bwa  mem -t 16 phix.fa Sample_PhiX/PhiX_TTAGGC_L001_R1_001.fastq.gz Sample_PhiX/PhiX_TTAGGC_L001_R2_001.fastq.gz  <span class="kw">|</span> <span class="kw">samtools</span> view -Sb - <span class="kw">&gt;</span> casava_TTAGGC.bam</code></pre>
+<p>To count the number of correctly mapped and paired reads (excluding secondary and supplementary alignments):</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">
+<span class="kw">bash-3.2</span>$ samtools view -c -f 1 -F 2316 casava_ACAGTG.bam
+<span class="kw">bash-3.2</span>$ samtools view -c -f 1 -F 2316  casava_ACTTGA.bam
+<span class="kw">bash-3.2</span>$ samtools view -c -f 1 -F 2316 casava_TTAGGC.bam
+<span class="kw">bash-3.2</span>$ samtools view -c -f 1 -F 2316 tagdust_ACAGTG.bam
+<span class="kw">bash-3.2</span>$ samtools view -c -f 1 -F 2316 tagdust_ACTTGA.bam
+<span class="kw">bash-3.2</span>$ samtools view -c -f 1 -F 2316 tagdust_TTAGGC.bam</code></pre>
+<h1 id="table-2-summary-of-single-cell-extracted-reads.">Table 2: Summary of Single Cell extracted reads.</h1>
+<p>Here we test how TagDust2 can handle datasets with a large number of indices / barcodes. We downloaded datafiles from <a href="#fn9" class="footnoteRef" id="fnref9"><sup>9</sup></a>:</p>
+<ul>
+<li>Run00020_L3_1_110110_GA2X_00020_FC.fq.bz2</li>
+<li>Run00021_L3_1_110114_GA2X_00021_FC.fq.bz2</li>
+<li>Run00020_L5_1_110110_GA2X_00020_FC.fq.bz2</li>
+<li>Run00021_L6_1_110114_GA2X_00021_FC.fq.bz2</li>
+<li>Run00021_L1_1_110114_GA2X_00021_FC.fq.bz2</li>
+</ul>
+<p>To extract the reads we use the following read architecture file:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">bash-3.2</span>$ cat arch.txt
+<span class="kw">tagdust</span> -1 O:N -2 B:TTTAGG,ATTCCA,GCTCAA,CATCCC,TTGGAC,CTGTGT,GGACAT,CAAAGT,AAGCGG,AATAAA,GAGGAG,GGTACA,AGCGAG,GTCGGT,ATTTGC,AGGACT,GCCCTC,TCGTAA,CCAGAC,TATGTA,ACAATA,ATGCTT,AGTTTA,CACAAG,ATCAAC,TAGTCG,TAGAGA,GTCCCG,TACTTC,AAAGTT,TAAGGG,GTTGCC,AAGTAC,GATCTT,TTAACT,GCGAAT,CCGCTA,TGAAGC,ATACAG,CTTCTG,GAGATC,CCGACG,CTCCAT,AAAACG,TAGCAT,TCGGGT,GTGGTA,CCTAGA,GGGTTT,ATGGCG,TTCATA,AACGCC,GGCTGC,GCTGTG,AGATGG,GTAATG,AGGGTC,ATCTCT,GCCTAG,TCAAAG,CATGAT,TGTGCG,GCAGGA,TCTACC,AGTCGT,CGTGGC,GCGTCC,GAACGC,ACTTAT,TGGATG,TATTGT,ACGTTG,GAATTA,CCATCT,TGATCA,CGTATT,CGGCAG,GACACT,TTCCGC,CTCGCA,GTATAC,TGTCAC,TGCGGA,ACGAGC,ACACCC,CGCTTG,TGCAAT,CAACAA,CTGAAA,AACCTA,ACCTGA,TCACTT,GGGCGA,CGCACC,CGAGTA,CCTTTC -3 S:GGG -4 R:N -t 80</code></pre>
+<p>Here are the TagDust commands:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">
+<span class="kw">bash-3.2</span>$ tagdust Run00020_L3_1_110110_GA2X_00020_FC.fq -arch arch.txt -t 80 -o Run00020_L3_1_110110_GA2X_00020_FC_extracted.fq
+<span class="kw">bash-3.2</span>$ tagdust Run00020_L5_1_110110_GA2X_00020_FC.fq -arch arch.txt -t 80 -o Run00020_L5_1_110110_GA2X_00020_FC_extracted.fq
+<span class="kw">bash-3.2</span>$ tagdust Run00021_L1_1_110114_GA2X_00021_FC.fq -arch arch.txt -t 80 -o Run00021_L1_1_110114_GA2X_00021_FC_extracted.fq
+<span class="kw">bash-3.2</span>$ tagdust Run00021_L3_1_110114_GA2X_00021_FC.fq -arch arch.txt -t 80 -o Run00021_L3_1_110114_GA2X_00021_FC_extracted.fq
+<span class="kw">bash-3.2</span>$ tagdust Run00021_L6_1_110114_GA2X_00021_FC.fq -arch arch.txt -t 80 -o Run00021_L6_1_110114_GA2X_00021_FC_extracted.fq</code></pre>
+<p>All resulting reads were aligned to the mouse genome (GRCm38.p2) using a RNAseq pipeline. The latter is included in the TagDust package (./reproducibility/rnaseq_pipeline_4tagdust_paper-0.8.tar.gz).</p>
+<h1 id="additional-files">Additional files:</h1>
+<h2 id="file-figure1.tex">File: Figure1.tex:</h2>
+<table class="sourceCode tex numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+</pre></td><td class="sourceCode"><pre><code class="sourceCode">
+\documentclass{article}
+\usepackage[margin=0.2cm,  left=0.0cm, paperwidth=18.5cm, paperheight=17cm]{geometry}
+\usepackage{tikz}
+\usetikzlibrary{shapes}
+\usetikzlibrary{calc,backgrounds}
+\usetikzlibrary{automata}
+\usetikzlibrary{arrows,positioning,calc,matrix} 
+\usetikzlibrary{decorations.pathreplacing,shapes.multipart}
+
+\tikzstyle{Dstate}=[shape=circle,draw=black!50,fill=black!10]
+\tikzstyle{Istate}=[shape=diamond,draw=black!50,fill=black!10]
+\tikzstyle{Mstate}=[shape=rectangle,draw=black!50,fill=black!10]
+
+\tikzstyle{empty}=[shape=circle]
+
+\tikzstyle{lightedge}=[-&gt;,dotted,thick]
+\tikzstyle{mainstate}=[state,thick]
+\tikzstyle{mainedge}=[-&gt;,thick]
+
+%\renewcommand{\chaptername}{}
+%\renewcommand{\thechapter}{}
+
+\definecolor{black}{RGB}{0,0,0}
+\definecolor{darkgrey}{RGB}{64,64,64}
+\definecolor{grey}{RGB}{127,127,127}
+\definecolor{lightgrey}{RGB}{230,230,230}
+
+% scheme 1 
+\definecolor{winered}{RGB}{158,16,0}
+\definecolor{lightred}{RGB}{199,53,42}
+\definecolor{brown}{RGB}{158,95,0}
+\definecolor{orange}{RGB}{235,141,0}
+
+%scheme2
+
+\definecolor{darkblue}{RGB}{19,48,182}
+
+\definecolor{blue}{RGB}{36,89,158}
+\definecolor{browngreen}{RGB}{82,75,19}
+\definecolor{lightbrown}{RGB}{158,126,36}
+
+%scheme3
+
+\definecolor{green}{RGB}{52,132,23}
+
+
+\definecolor{lightgreen}{RGB}{82,209,36}
+\definecolor{lightbrowngreen}{RGB}{125,133,23}
+\definecolor{yellowgreen}{RGB}{198,209,36}
+
+%scheme4
+
+
+\definecolor{paper}{RGB}{240,238,183}
+\definecolor{organicgrey}{RGB}{163,162,124}
+
+
+\definecolor{metal}{RGB}{75,81,82}
+\begin{document}
+\begin{tikzpicture}[]
+ \tiny
+ 
+ 
+ \node[shape=circle,draw=black,thick,font =\Large] at (-3,6.5) {\bf 1};
+ \node[shape=circle,draw=black,thick,font =\Large] at (-3,0) {\bf 2};
+  \node[shape=circle,draw=black,thick,font =\Large] at (-3,-6) {\bf 3};
+   \node[shape=circle,draw=black,thick,font =\Large] at (-3,-8) {\bf 4};
+ 
+   \node[style={align=center},draw = black, thick,font=\large] at (6,6.5)  { \tt tagdust2 -1 O:N -2 B:GTA,AAC -3 R:N -4 L:CCTTAA  reads.fq} ;
+   
+      \path[shade,top color=gray!5,bottom color=blue!10!white] (2.2,6.2)--  (3.2,6.2) -- (0.8,4.6) --  (-0.7,4.6) -- cycle;
+   
+   \path[shade,top color=gray!5,bottom color=blue!10!white] (4,6.2)--  (6,6.2) -- (4.5,4.6) --  (1.6,4.6) -- cycle;
+   
+   \path[shade,top color=gray!5,bottom color=blue!10!white] (6.8,6.2)--  (7.5,6.2) -- (6.7,4.6) --  (5.3,4.6) -- cycle;
+   
+   \path[shade,top color=gray!5,bottom color=blue!10!white] (8.3,6.2)--  (10.2,6.2) -- (13.4,4.6) --  (7.5,4.6) -- cycle;
+   
+   
+   
+  \draw[
+        -triangle 90,
+        line width=2mm,
+        postaction={draw, line width=0.5cm, shorten &gt;=0.5cm, -}
+    ] (6,6) -- node[right=1,font =\Large] {{\bf HMM construction}} (6,5) ;
+  
+
+   
+   
+ 
+\path[shade,top color=gray!5,bottom color=blue!10!white] (-0.65,-6.25)--  (12.25,-6.25) -- (12.5,-8.15) --  (-0.5,-8.25) -- (-0.65,-6.25);
+
+\path[top color=winered!80!white,bottom color=winered!30!white] (-1.75,-6.25)--  (-0.65,-6.25) -- (6,-7.7) --  (2.5,-7.7) -- (-1.75,-6.25);
+
+\draw[rounded corners=4pt,draw=lightgrey, fill=lightgrey] (-0.75,4.5)  rectangle (0.75,-4);
+
+\draw[rounded corners=4pt,draw=lightred, fill=lightred] (1.5,4.5)   rectangle (4.5,-4);
+ 
+
+\draw[rounded corners=4pt,draw=blue, fill=blue] (5.25,4.5)  rectangle (6.75,-4);
+  
+\draw[rounded corners=4pt,draw=lightgrey, fill=lightgrey] (7.5,4.5) rectangle (13.5,-4);
+
+ \node  at (0,4)  [font=\Large,style={align=center}] () {{\bf Opt}};
+ 
+ \node  at (3,4)  [font=\Large,style={align=center}] () {{\bf Barcode}};
+ 
+%  \node  at (3,2+1.75)  [font=\Large,style={align=center}] () {{\bf 1}};
+  
+ %   \node  at (3,-2+ 1.75)  [font=\Large,style={align=center}] () {{\bf 2}};
+  \node  at (6,4)  [font=\Large,style={align=center}] () {{\bf Read}};
+  
+    \node  at (10.5,4)  [font=\Large,style={align=center}] () {{\bf Linker}};
+    
+\draw[
+        -triangle 90,
+        line width=2mm,
+        postaction={draw, line width=0.5cm, shorten &gt;=0.5cm, -}
+    ] (6,-4.5) -- node[right=1,font =\Large] {{\bf Decoding}} (6,-5.5) ;
+    
+  \node[draw=white, thick,font=\Large] at (6,-6)  {\bf {\color{lightgrey}C}{\color{lightred}GTA}{\color{blue}GGGGAACCCCGCCTGTTTACCAAAAACATCA}{\color{lightgrey}CCTTA}} ;
+  
+  \draw[
+        -triangle 90,
+        line width=2mm,
+        postaction={draw, line width=0.5cm, shorten &gt;=0.5cm, -}
+    ] (6,-6.5) -- node[right=1,font =\Large] {{\bf Output}} (6,-7.5) ;
+  
+  \node[style={align=left},text width=27em, thick,font=\Large] at (2.8,-8)  {\bf  $&gt;$READ X, {\color{lightred}Barcode GTA}  } ;
+   \node[style={align=left},text width=20em,draw=white, thick,font=\Large] at (2,-8.5)  {\bf   {\color{blue}GGGGAACCCCGCCTGTTTACCAAAAACATCA}} ;
+  
+  
+\begin{scope}[shift={(-1.5,0)}];
+\node[Dstate] (START) at (0,0){$S$};
+\end{scope}
+
+\begin{scope}[shift={(0,1.5)}];
+\node[Mstate] (O1) at (0,0){\shortstack{ A\\  C\\  G\\ T} };
+\end{scope}
+
+\begin{scope}[shift={(2,2)}];
+%\node[Dstate] (d1) at (0,1){$D$};
+\node[Istate] (i1) at (0,0){$I$};
+\node[Mstate] (m1) at (0,-1.2){\shortstack{ {\color{black!40}A}\\   {\color{black!40}C}\\  {\bf G}\\   {\color{black!40}T}} };
+
+
+
+\node[Dstate] (d2) at (1,1){$D$};
+\node[Istate] (i2) at (1,0){$I$};
+\node[Mstate] (m2) at (1,-1.2){\shortstack{ {\color{black!40}A}\\   {\color{black!40}C}\\   {\color{black!40}G}\\   {\bf T}} };
+
+
+%\node[Dstate] (d3) at (2,1){$D$};
+%\node[Istate] (i3) at (2,-0){$I$};
+\node[Mstate] (m3) at (2,-1.2){\shortstack{ {\bf A}\\   {\color{black!40}C}\\   {\color{black!40}G}\\   {\color{black!40}T}} };
+\end{scope}
+
+
+\begin{scope}[shift={(2,-2)}];
+
+%\node[Dstate] (d4) at (0,1){$D$};
+\node[Istate] (i4) at (0,0){$I$};
+\node[Mstate] (m4) at (0,-1.2){\shortstack{ {\bf A}\\   {\color{black!40}C}\\   {\color{black!40}G}\\   {\color{black!40}T}} };
+
+
+
+\node[Dstate] (d5) at (1,1){$D$};
+\node[Istate] (i5) at (1,0){$I$};
+\node[Mstate] (m5) at (1,-1.2){\shortstack{ {\bf A}\\   {\color{black!40}C}\\   {\color{black!40}G}\\   {\color{black!40}T}} };
+
+
+%\node[Dstate] (d6) at (2,1){$D$};
+%\node[Istate] (i6) at (2,-0){$I$};
+\node[Mstate] (m6) at (2,-1.2){\shortstack{ {\color{black!40}A}\\   {\bf C}\\   {\color{black!40}G}\\   {\color{black!40}T}} };
+\end{scope}
+
+
+
+\begin{scope}[shift={(6,0)}];
+
+
+
+\node[Mstate] (R1) at (0,0){\shortstack{ A\\  C \\ G \\   T} };
+\end{scope}
+
+
+
+\begin{scope}[shift={(8,2)}];
+
+%CCTTAAGG
+%\node[Dstate] (dl1) at (0,1){$D$};
+\node[Istate] (il1) at (0,0){$I$};
+\node[Mstate] (ml1) at (0,-1.2){\shortstack{ {\color{black!40}A}\\  {\bf C} \\   {\color{black!40}G}\\ {\color{black!40}T}} };
+
+
+
+\node[Dstate] (dl2) at (1,1){$D$};
+\node[Istate] (il2) at (1,0){$I$};
+\node[Mstate] (ml2) at (1,-1.2){\shortstack{ {\color{black!40}A}\\   {\bf C}\\   {\color{black!40}G}\\   {\color{black!40}T}} };
+
+
+\node[Dstate] (dl3) at (2,1){$D$};
+\node[Istate] (il3) at (2,-0){$I$};
+\node[Mstate] (ml3) at (2,-1.2){\shortstack{ {\color{black!40}A}\\   {\color{black!40}C}\\   {\color{black!40}G}\\   {\bf T}} };
+
+\node[Dstate] (dl4) at (3,1){$D$};
+\node[Istate] (il4) at (3,0){$I$};
+\node[Mstate] (ml4) at (3,-1.2){\shortstack{ {\color{black!40}A}\\   {\color{black!40}C}\\   {\color{black!40}G}\\   {\bf T}} };
+
+\node[Dstate] (dl5) at (4,1){$D$};
+\node[Istate] (il5) at (4,0){$I$};
+\node[Mstate] (ml5) at (4,-1.2){\shortstack{ {\bf A}\\   {\color{black!40}C}\\   {\color{black!40}G}\\   {\color{black!40}T}} };
+%\node[Dstate] (dl6) at (5,1){$D$};
+%\node[Istate] (il6) at (5,-0){$I$};
+\node[Mstate] (ml6) at (5,-1.2){\shortstack{ {\bf A } \\   {\color{black!40}C}\\   {\color{black!40}G}\\   {\color{black!40}T}} };
+\end{scope}
+
+\begin{scope}[shift={(14,-2)}];
+\node[Dstate] (END) at (0,0){$E$};
+\end{scope}
+
+ \path 
+ 
+(START) edge [lightedge] (O1)
+
+(START) edge [lightedge] (m1)
+
+(START) edge [lightedge] (m4)
+ 
+(O1) edge [lightedge, loop above] ()
+(R1) edge [lightedge, loop above] ()
+    
+(O1)edge [lightedge] (m1)
+(O1)edge [lightedge] (m4)
+(R1)edge [lightedge] (ml1)
+
+(ml1.south)edge [lightedge] (END)
+(ml2.south)edge [lightedge] (END)
+(ml3.south)edge [lightedge] (END)
+(ml4.south)edge [lightedge] (END)
+(ml5.south)edge [lightedge] (END)
+(ml6.south)edge [lightedge] (END)
+(R1) edge [lightedge](END)
+
+(m3)edge [lightedge] (R1)
+(m6)edge [lightedge] (R1)
+
+(m1) edge [lightedge] (m2) 
+(m1) edge [lightedge] (d2) 
+(m1) edge [lightedge] (i1)
+   
+(i1) edge [lightedge,loop above] ()
+(i1) edge  [lightedge] (m2)
+(i1) edge [lightedge, loop above] ()
+%(d1) edge  [lightedge,-&gt;] (d2)
+%(d1) edge  [lightedge,-&gt;] (m2)
+
+(m2) edge [lightedge] (m3) 
+%(m2) edge [lightedge] (d3) 
+(m2) edge [lightedge] (i2)
+   
+(i2) edge [lightedge,loop above] ()
+(i2) edge  [lightedge] (m3)
+(i2) edge [lightedge, loop above] ()
+%(d2) edge  [lightedge,-&gt;] (d3)
+(d2) edge  [lightedge,-&gt;] (m3)
+
+
+%(m3) edge [lightedge] (i3)
+   
+%(i3) edge [lightedge,loop above] ()
+
+
+
+(m4) edge [lightedge] (m5) 
+(m4) edge [lightedge] (d5) 
+(m4) edge [lightedge] (i4)
+   
+(i4) edge [lightedge,loop above] ()
+(i4) edge  [lightedge] (m5)
+(i4) edge [lightedge, loop above] ()
+%(d4) edge  [lightedge,-&gt;] (d5)
+%(d4) edge  [lightedge,-&gt;] (m5)
+
+(m5) edge [lightedge] (m6) 
+%(m5) edge [lightedge] (d6) 
+(m5) edge [lightedge] (i5)
+   
+(i5) edge [lightedge,loop above] ()
+(i5) edge  [lightedge] (m6)
+(i5) edge [lightedge, loop above] ()
+%(d5) edge  [lightedge,-&gt;] (d6)
+(d5) edge  [lightedge,-&gt;] (m6)
+
+
+%(m6) edge [lightedge] (i6)
+   
+%(i6) edge [lightedge,loop above] ()
+
+
+ 
+(ml1) edge [lightedge] (ml2) 
+(ml1) edge [lightedge] (dl2) 
+(ml1) edge [lightedge] (il1)
+   
+(il1) edge [lightedge,loop above] ()
+(il1) edge  [lightedge] (ml2)
+(il1) edge [lightedge, loop above] ()
+%(dl1) edge  [lightedge,-&gt;] (dl2)
+%(dl1) edge  [lightedge,-&gt;] (ml2)
+
+(ml2) edge [lightedge] (ml3) 
+(ml2) edge [lightedge] (dl3) 
+(ml2) edge [lightedge] (il2)
+   
+(il2) edge [lightedge,loop above] ()
+(il2) edge  [lightedge] (ml3)
+(il2) edge [lightedge, loop above] ()
+(dl2) edge  [lightedge,-&gt;] (dl3)
+(dl2) edge  [lightedge,-&gt;] (ml3)
+
+
+(ml3) edge [lightedge] (ml4) 
+(ml3) edge [lightedge] (dl4) 
+(ml3) edge [lightedge] (il3)
+   
+(il3) edge [lightedge,loop above] ()
+(il3) edge  [lightedge] (ml4)
+(il3) edge [lightedge, loop above] ()
+(dl3) edge  [lightedge,-&gt;] (dl4)
+(dl3) edge  [lightedge,-&gt;] (ml4)
+
+
+(ml4) edge [lightedge] (ml5) 
+(ml4) edge [lightedge] (dl5) 
+(ml4) edge [lightedge] (il4)
+   
+(il4) edge [lightedge,loop above] ()
+(il4) edge  [lightedge] (ml5)
+(il4) edge [lightedge, loop above] ()
+(dl4) edge  [lightedge,-&gt;] (dl5)
+(dl4) edge  [lightedge,-&gt;] (ml5)
+
+
+
+(ml5) edge [lightedge] (ml6) 
+%(ml5) edge [lightedge] (dl6) 
+(ml5) edge [lightedge] (il5)
+   
+(il5) edge [lightedge,loop above] ()
+(il5) edge  [lightedge] (ml6)
+(il5) edge [lightedge, loop above] ()
+%(dl5) edge  [lightedge,-&gt;] (dl6)
+(dl5) edge  [lightedge,-&gt;] (ml6)
+;
+
+\end{tikzpicture}
+
+\end{document}</code></pre></td></tr></table>
+<section class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>http://sourceforge.net/projects/pgf/<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>Faircloth BC, Glenn TC. 2012. Not all sequence tags are created equal: Designing and validating sequence identification tags robust to indels. PLoS ONE 7(8): e42543. doi: 10.1371/journal.pone.0042543<a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>Teemu Kivioja, Anna Vähärautio, Kasper Karlsson, Martin Bonke, Martin Enge, Sten Linnarsson, and Jussi Taipale. Counting absolute numbers of molecules using unique molecular identifiers. Nature methods, 9(1):72–74, January 2012.<a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p>Li H. and Durbin R. (2009) Fast and accurate short read alignment with Burrows-Wheeler Transform. Bioinformatics, 25:1754-60. [PMID: 19451168]<a href="#fnref4">↩</a></p></li>
+<li id="fn5"><p>Quinlan, Aaron R., and Ira M. Hall. “BEDTools: a flexible suite of utilities for comparing genomic features.” Bioinformatics 26.6 (2010): 841-842.<a href="#fnref5">↩</a></p></li>
+<li id="fn6"><p>https://gist.github.com/brantfaircloth/3125885<a href="#fnref6">↩</a></p></li>
+<li id="fn7"><p>http://support.illumina.com/downloads/bcl2fastq_conversion_software_184.html<a href="#fnref7">↩</a></p></li>
+<li id="fn8"><p>Li, H.: Aligning sequence reads, clone sequences and assembly contigs with bwa-mem. arXiv preprint arXiv:1303.3997 (2013)<a href="#fnref8">↩</a></p></li>
+<li id="fn9"><p>Islam, S., Kj ̈allquist, U., Moliner, A., Zajac, P., Fan, J.-B., L ̈onnerberg, P., Linnarsson, S.: Characterization of the single-cell transcriptional landscape by highly multiplex rna-seq. Genome research 21(7), 1160–1167 (2011)<a href="#fnref9">↩</a></p></li>
+</ol>
+</section>
+</body>
+</html>
